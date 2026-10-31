@@ -1,6 +1,6 @@
 {
   "name": "@vela/app-desktop",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "Vela Desktop — Solid shell running inside a Tauri 2 window.",

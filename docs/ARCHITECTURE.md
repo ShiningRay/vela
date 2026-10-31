@@ -119,7 +119,7 @@ DesktopShell
 
 ### 3.7 应用包
 
-`.vpk` 是 ZIP 包，根目录必须有 `manifest.json` 与 HTML 入口。安装器在 [packages.tsx](../packages/desktop/src/packages.tsx) 中：
+`.vpk` 是 ZIP 包，根目录必须有 `manifest.json` 与 HTML 入口。安装器在 [packages.tsx](https://github.com/ShiningRay/vela/blob/main/packages/desktop/src/packages.tsx) 中：
 
 1. `fflate` 解包，限制 64 个文件 / 单文件 5 MB / 总计 6 MB，拒绝绝对路径与 `..`；
 2. 校验 manifest id、版本、入口与保留 id；

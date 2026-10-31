@@ -21,9 +21,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "e2e:install": "playwright install chromium"
+    "e2e:install": "playwright install chromium",
+    "changeset": "changeset",
+    "version": "changeset version && node scripts/sync-version.mjs",
+    "release": "changeset tag",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@playwright/test": "^1.64.1",
     "@solidjs/testing-library": "^0.8.10",
     "@tauri-apps/cli": "^2.12.4",
@@ -33,6 +40,7 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
     "vite-plugin-solid": "^2.11.15",
+    "vitepress": "^1.6.4",
     "vitest": "^5.0.5"
   }
 }

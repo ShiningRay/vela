@@ -15,3 +15,5 @@ apps/*/src-tauri/runtime/*
 test-results/
 playwright-report/
 blob-report/
+docs/.vitepress/cache/
+docs/.vitepress/dist/

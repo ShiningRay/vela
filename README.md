@@ -1,6 +1,10 @@
 # Vela
 
+[![ci](https://github.com/ShiningRay/vela/actions/workflows/ci.yml/badge.svg)](https://github.com/ShiningRay/vela/actions/workflows/ci.yml)
+[![pages](https://github.com/ShiningRay/vela/actions/workflows/pages.yml/badge.svg)](https://github.com/ShiningRay/vela/actions/workflows/pages.yml)
 [![GitHub](https://img.shields.io/badge/GitHub-ShiningRay%2Fvela-181717?logo=github)](https://github.com/ShiningRay/vela)
+
+文档站：<https://shiningray.github.io/vela/>
 
 **Vela Desktop** — 用 Solid + TypeScript 重做的桌面平台，架构经验来自 Citrine，运行时不依赖 Ruby。
 
@@ -45,7 +49,7 @@ vela/
     desktop/   @vela/app-desktop     Tauri 主应用
   services/
     demo/         @vela/service-demo  Node/TS 后台服务，WebSocket 发布信号
-  docs/
+  docs/       VitePress 文档站（架构 / VPK / Roadmap / 发布）
   assets/
 ```
 
@@ -81,6 +85,10 @@ pnpm e2e
 
 # 打包桌面应用
 pnpm build:desktop
+
+# 文档站
+pnpm docs:dev
+pnpm docs:build
 ```
 
 `pnpm dev` 打开 `http://localhost:5173` 的 Counter 示例，`pnpm dev:components` 打开 `http://localhost:5174` 的组件示例页。`pnpm dev:desktop` 会先启动 Vite，再由 Tauri 打开原生窗口；Rust 侧用随包暂存的 Node 运行时启动 `services/demo`，服务绑定随机空闲端口，实际 `ws://` 地址通过 supervisor 状态事件交给前端。浏览器调试时用 `pnpm dev:service` 手动起服务（默认 `ws://127.0.0.1:4317`）。如果本机已有可用的 Chromium、但无法访问 Playwright CDN，可为 `pnpm e2e` 设置 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`。
@@ -91,7 +99,7 @@ pnpm build:desktop
 
 ## 当前状态
 
-P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插件市场完成；P4 的三个 VPK demo 独立到 [vela-apps](https://github.com/ShiningRay/vela-apps)，插件市场服务独立到 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace)，ZUI 不做：
+P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插件市场完成；P5 发布工程已配置 CI、Changesets、多平台 Release workflow 与文档站，签名/公证/自动更新待证书；P4 的三个 VPK demo 独立到 [vela-apps](https://github.com/ShiningRay/vela-apps)，插件市场服务独立到 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace)，ZUI 不做：
 
 - `@vela/core`：窗口管理器（多实例 `appId`、blur 恢复、吸附、最大化）、应用注册表、命令、VFS（`MemoryVfs` / `IndexedDbVfs`）、通知（自动消失 + 可选宿主桥）、快捷键（Space 归一化）、深相等信号，带 Vitest 单测；
 - `@vela/remote`：权威 `RemoteHub`、镜像 `RemoteSession`、`WsWire` / `MemoryWire`，支持 `propose` / `patch` / `release` / `barrier`；权威侧用平台无关的 `createSource`，不依赖 Solid；
@@ -101,6 +109,7 @@ P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插�
 - `@vela/app-components`：全部组件的 Vite 示例页；
 - `@vela/app-desktop`：Tauri 2 壳、Node 服务 supervisor（随机端口、健康检查、崩溃重启、日志）、notification 插件、图标；
 - `@vela/service-demo`：Node/TS WebSocket 服务，发布 `tasks:list` / `service:status` / `clock` 三个信号；
+- `docs`：VitePress 文档站，GitHub Pages 自动部署，含组件示例站；
 
 已在 macOS 本机验证：
 
@@ -108,20 +117,32 @@ P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插�
 - `pnpm e2e`（15 项）通过：桌面 10 项、组件示例页 smoke、VFS 导入/导出刷新保留、设置刷新恢复、Editor/Terminal 共享 VFS、通用 `.vpk` 安装→启动→刷新恢复；
 - `pnpm dev:components`：Primitives / Feedback / Layout / Data / Desktop 五个分区均正常渲染；
 - `pnpm dev`：Counter 渲染，点击 +1 后 `count=1 / double=2 / effect runs=2`，写入结构相等对象后 effect 次数保持 2；
-- `pnpm build:desktop`：产出 `Vela.app`（122.28 MB，含 Node 运行时）与 `Vela_0.1.0_aarch64.dmg`（38.91 MB）；
+- `pnpm build:desktop`：产出 `Vela.app`（122.28 MB，含 Node 运行时）与 `Vela_0.1.0_aarch64.dmg`（38.91 MB）；CSP 已启用并完成主窗口与 srcdoc 沙箱冒烟；
 - 打包应用启动后子进程为 `Vela.app/Contents/Resources/runtime/node`，服务监听随机端口，前端成功连接；
 - 强杀 Node 子进程后 2s 内自动重启并换新端口，前端重连；强杀 Tauri 主进程后 Node 子进程随 stdin 关闭退出；
 - `VELA_TEST_NOTIFICATION=1` 启动打包应用时 Rust `show()` 返回成功，macOS 显示通知权限提示。
 
 已知限制：
 
-- Node 运行时按当前构建平台暂存；跨平台构建需在目标平台执行 `prepare-node-runtime`，三平台 CI 尚未接；
+- Node 运行时按当前构建平台暂存；Release workflow 配置 macOS arm64/x64、Linux x64、Windows x64 矩阵，首次运行待验证；
 - 健康检查是 TCP 可达性 + 子进程存活，不是业务级探针；重启为固定 2s 轮询，无退避；
 - 组件库覆盖 P2 清单，未包含虚拟列表、富文本、数据网格等复杂组件；
 - 通知最多同屏 3 条；系统通知需用户在 macOS/Windows 授权，Windows 未实测；
 - `.vpk` v1 只支持根 `manifest.json` + 单个 HTML 入口；CSS/JS 以内联方式注入，其他资源经 blob URL；单文件上限 5 MB、总计 6 MB；无签名/发布者身份，详见 [docs/VPK.md](docs/VPK.md)；
 - 插件市场服务由独立仓部署，Vela 仅负责客户端；默认 `http://127.0.0.1:4320`，可在 Settings 中更换。
-- Tauri 打包未做签名/公证。
+- Tauri 打包尚未配置 Apple/Windows 签名证书，当前产物未签名、未公证，也未启用 updater；发布与签名流程见 [docs/RELEASING.md](docs/RELEASING.md)。
+- 文档站与组件示例站通过 GitHub Pages workflow 部署。
+
+## 发布
+
+```bash
+pnpm changeset   # 记录本次改动
+pnpm version     # 更新版本、CHANGELOG，并同步 Tauri/Cargo 版本
+pnpm release     # 生成 tag
+git push origin main --follow-tags
+```
+
+推送 `v*` tag 触发多平台构建与 GitHub Release；详细签名、公证与 updater 前置条件见 [docs/RELEASING.md](docs/RELEASING.md)。
 
 ## 命名
 
