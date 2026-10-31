@@ -1,6 +1,6 @@
 # Roadmap
 
-> 状态：P0 骨架、P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P4 VPK 应用分发、P6 插件市场已落地（VPK 应用外置在 ShiningRay/vela-apps，市场服务外置在 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace)）；P5 工程化未完成；ZUI 不做；工期为单人估算，按实际速度调整。
+> 状态：P0 骨架、P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P4 VPK 应用分发、P6 插件市场已落地（VPK 应用外置在 ShiningRay/vela-apps，市场服务外置在 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace)）；P5 发布链路已落地，签名/公证/updater 待证书；ZUI 不做；工期为单人估算，按实际速度调整。
 
 ## P0 — 骨架（完成）
 
@@ -119,13 +119,15 @@
 - Settings → App packages → Install `.vpk` 可安装；
 - 包在 `sandbox="allow-scripts"` iframe 中启动。VPK 上限为单文件 5 MB、总计 6 MB。
 
-## P5 — 分发与工程化
+## P5 — 分发与工程化（基础完成）
 
-- [ ] GitHub Actions：typecheck / test / build / tauri build 三平台
-- [ ] 版本与 Changesets
-- [ ] macOS 签名与公证、Windows 签名
-- [ ] 自动更新（Tauri updater）
-- [ ] 文档站与组件示例站
+- [x] GitHub Actions CI：typecheck / test / build / e2e / macOS desktop build；
+- [x] tag Release workflow：macOS arm64、macOS x64、Linux x64、Windows x64，dry-run 全部成功；
+- [x] 版本与 Changesets：私有包版本、CHANGELOG、Tauri/Cargo 版本同步；
+- [x] 文档站与组件示例站：VitePress + GitHub Pages；
+- [ ] macOS 签名与公证（待 Apple Developer 证书与公证凭据）；
+- [ ] Windows 代码签名（待 Authenticode 证书）；
+- [ ] 自动更新（Tauri updater，待签名包与更新密钥）。
 
 ## P6 — 插件市场（完成）
 

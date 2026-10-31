@@ -2,6 +2,7 @@
 
 [![ci](https://github.com/ShiningRay/vela/actions/workflows/ci.yml/badge.svg)](https://github.com/ShiningRay/vela/actions/workflows/ci.yml)
 [![pages](https://github.com/ShiningRay/vela/actions/workflows/pages.yml/badge.svg)](https://github.com/ShiningRay/vela/actions/workflows/pages.yml)
+[![release](https://img.shields.io/github/v/release/ShiningRay/vela?display_name=tag)](https://github.com/ShiningRay/vela/releases)
 [![GitHub](https://img.shields.io/badge/GitHub-ShiningRay%2Fvela-181717?logo=github)](https://github.com/ShiningRay/vela)
 
 文档站：<https://shiningray.github.io/vela/>
@@ -99,7 +100,7 @@ pnpm docs:build
 
 ## 当前状态
 
-P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插件市场完成；P5 发布工程已配置 CI、Changesets、多平台 Release workflow 与文档站，签名/公证/自动更新待证书；P4 的三个 VPK demo 独立到 [vela-apps](https://github.com/ShiningRay/vela-apps)，插件市场服务独立到 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace)，ZUI 不做：
+P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插件市场完成；P5 发布工程已落地 CI、Changesets、多平台 Release workflow 与文档站，签名/公证/自动更新待证书；P4 的三个 VPK demo 独立到 [vela-apps](https://github.com/ShiningRay/vela-apps)，插件市场服务独立到 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace)，ZUI 不做：
 
 - `@vela/core`：窗口管理器（多实例 `appId`、blur 恢复、吸附、最大化）、应用注册表、命令、VFS（`MemoryVfs` / `IndexedDbVfs`）、通知（自动消失 + 可选宿主桥）、快捷键（Space 归一化）、深相等信号，带 Vitest 单测；
 - `@vela/remote`：权威 `RemoteHub`、镜像 `RemoteSession`、`WsWire` / `MemoryWire`，支持 `propose` / `patch` / `release` / `barrier`；权威侧用平台无关的 `createSource`，不依赖 Solid；
@@ -124,14 +125,14 @@ P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插�
 
 已知限制：
 
-- Node 运行时按当前构建平台暂存；Release workflow 配置 macOS arm64/x64、Linux x64、Windows x64 矩阵，首次运行待验证；
+- Node 运行时按当前构建平台暂存；Release workflow 已 dry-run 通过 macOS arm64/x64、Linux x64、Windows x64 矩阵；
 - 健康检查是 TCP 可达性 + 子进程存活，不是业务级探针；重启为固定 2s 轮询，无退避；
 - 组件库覆盖 P2 清单，未包含虚拟列表、富文本、数据网格等复杂组件；
 - 通知最多同屏 3 条；系统通知需用户在 macOS/Windows 授权，Windows 未实测；
 - `.vpk` v1 只支持根 `manifest.json` + 单个 HTML 入口；CSS/JS 以内联方式注入，其他资源经 blob URL；单文件上限 5 MB、总计 6 MB；无签名/发布者身份，详见 [docs/VPK.md](docs/VPK.md)；
 - 插件市场服务由独立仓部署，Vela 仅负责客户端；默认 `http://127.0.0.1:4320`，可在 Settings 中更换。
 - Tauri 打包尚未配置 Apple/Windows 签名证书，当前产物未签名、未公证，也未启用 updater；发布与签名流程见 [docs/RELEASING.md](docs/RELEASING.md)。
-- 文档站与组件示例站通过 GitHub Pages workflow 部署。
+- 文档站与组件示例站已通过 GitHub Pages 部署：<https://shiningray.github.io/vela/>。
 
 ## 发布
 
