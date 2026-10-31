@@ -121,10 +121,14 @@ jobs:
         with:
           path: release-assets
           merge-multiple: true
-      - name: Generate checksums
+      - name: Collect release files
         run: |
-          cd release-assets
-          find . -maxdepth 1 -type f -printf '%f\n' | sort | xargs sha256sum > SHA256SUMS
+          mkdir -p release-dist
+          find release-assets -type f -exec cp {} release-dist/ \;
+          cd release-dist
+          find . -maxdepth 1 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > /tmp/vela-sha256sums
+          mv /tmp/vela-sha256sums SHA256SUMS
+          ls -lh
           cat SHA256SUMS
       - name: Create or update release
         env:
@@ -134,4 +138,4 @@ jobs:
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             gh release create "$TAG" --title "Vela $TAG" --generate-notes
           fi
-          gh release upload "$TAG" release-assets/* --clobber
+          gh release upload "$TAG" release-dist/* --clobber
