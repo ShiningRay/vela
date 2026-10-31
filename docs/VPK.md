@@ -28,37 +28,7 @@ hello.vpk
 }
 ```
 
-- `id`: `^[a-z0-9][a-z0-9-]{1,31}# `.vpk` application packages
-
-Vela packages are ZIP archives with a root `manifest.json`, an HTML entry and
-optional resources. They are installed into the persistent VFS under
-`/Apps/<id>/` and launched inside a sandboxed iframe.
-
-## Layout
-
-```
-hello.vpk
-├── manifest.json
-├── index.html
-└── assets/
-    ├── app.js
-    └── style.css
-```
-
-`manifest.json`:
-
-```json
-{
-  "id": "hello-package",
-  "name": "Hello Package",
-  "version": "1.0.0",
-  "entry": "index.html",
-  "icon": "H",
-  "window": { "width": 640, "height": 460 }
-}
-```
-
-; built-in ids (`about`, `files`, `editor`,
+- `id`: `^[a-z0-9][a-z0-9-]{1,31}$`; built-in ids (`about`, `files`, `editor`,
   `terminal`, `marketplace`, `service`, `settings`) are reserved.
 - `entry`: an HTML file at the package root.
 - `icon`: optional text glyph shown on the desktop (max 4 characters).
