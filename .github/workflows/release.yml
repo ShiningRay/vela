@@ -136,6 +136,16 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" --title "Vela $TAG" --generate-notes
+            cat > /tmp/vela-release-notes.md <<EOF
+          Vela Desktop $TAG
+
+          - macOS arm64 / x64 DMG
+          - Linux x64 deb / rpm / AppImage
+          - Windows x64 NSIS / MSI
+          - SHA256SUMS
+
+          > 当前产物尚未签名或公证，自动更新未启用。macOS 首次打开可能需要在系统设置中放行。
+          EOF
+            gh release create "$TAG" --title "Vela $TAG" --notes-file /tmp/vela-release-notes.md
           fi
           gh release upload "$TAG" release-dist/* --clobber
