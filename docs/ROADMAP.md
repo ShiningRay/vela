@@ -122,7 +122,7 @@
 ## P5 — 分发与工程化（基础完成）
 
 - [x] GitHub Actions CI：typecheck / test / build / e2e / macOS desktop build；
-- [x] tag Release workflow：macOS arm64、macOS x64、Linux x64、Windows x64，dry-run 全部成功；
+- [x] v0.1.0 Release 已发布：macOS arm64/x64、Linux x64、Windows x64 与 SHA256SUMS；
 - [x] 版本与 Changesets：私有包版本、CHANGELOG、Tauri/Cargo 版本同步；
 - [x] 文档站与组件示例站：VitePress + GitHub Pages；
 - [ ] macOS 签名与公证（待 Apple Developer 证书与公证凭据）；

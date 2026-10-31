@@ -100,7 +100,7 @@ pnpm docs:build
 
 ## 当前状态
 
-P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插件市场完成；P5 发布工程已落地 CI、Changesets、多平台 Release workflow 与文档站，签名/公证/自动更新待证书；P4 的三个 VPK demo 独立到 [vela-apps](https://github.com/ShiningRay/vela-apps)，插件市场服务独立到 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace)，ZUI 不做：
+P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插件市场完成；P5 发布工程已落地 CI、Changesets、多平台 Release workflow 与文档站，v0.1.0 已发布；签名/公证/自动更新待证书；P4 的三个 VPK demo 独立到 [vela-apps](https://github.com/ShiningRay/vela-apps)，插件市场服务独立到 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace)，ZUI 不做：
 
 - `@vela/core`：窗口管理器（多实例 `appId`、blur 恢复、吸附、最大化）、应用注册表、命令、VFS（`MemoryVfs` / `IndexedDbVfs`）、通知（自动消失 + 可选宿主桥）、快捷键（Space 归一化）、深相等信号，带 Vitest 单测；
 - `@vela/remote`：权威 `RemoteHub`、镜像 `RemoteSession`、`WsWire` / `MemoryWire`，支持 `propose` / `patch` / `release` / `barrier`；权威侧用平台无关的 `createSource`，不依赖 Solid；
@@ -135,6 +135,8 @@ P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插�
 - 文档站与组件示例站已通过 GitHub Pages 部署：<https://shiningray.github.io/vela/>。
 
 ## 发布
+
+当前版本：[v0.1.0](https://github.com/ShiningRay/vela/releases/tag/v0.1.0)。
 
 ```bash
 pnpm changeset   # 记录本次改动

@@ -18,6 +18,8 @@ pnpm release         # 生成 v<version> tag
 
 ## Tag 发布
 
+当前 `v0.1.0` 为未签名版本，提供 macOS arm64/x64 DMG、Linux x64 deb/rpm/AppImage、Windows x64 NSIS/MSI 与 SHA256SUMS。
+
 推送 `v*` tag 会触发 `.github/workflows/release.yml`，构建 macOS arm64/x64、Linux x64 与 Windows x64 产物，并创建 GitHub Release。
 
 ```bash
