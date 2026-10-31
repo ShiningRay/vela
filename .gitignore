@@ -8,3 +8,10 @@ coverage/
 # Tauri / Rust
 apps/*/src-tauri/target/
 apps/*/src-tauri/gen/
+apps/*/src-tauri/runtime/*
+!apps/*/src-tauri/runtime/.gitkeep
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/

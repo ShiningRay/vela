@@ -7,12 +7,42 @@ export interface VfsEntry {
   updatedAt: number;
 }
 
+export interface VfsSeed {
+  path: string;
+  kind: VfsEntryKind;
+  content?: string;
+  updatedAt: number;
+}
+
+export function defaultVfsEntries(now = Date.now()): VfsSeed[] {
+  return [
+    { path: "/", kind: "dir", updatedAt: now },
+    { path: "/Desktop", kind: "dir", updatedAt: now },
+    { path: "/Documents", kind: "dir", updatedAt: now },
+    {
+      path: "/Desktop/readme.txt",
+      kind: "file",
+      content: "Welcome to Vela.\n\nDouble-click an icon to open a window.",
+      updatedAt: now,
+    },
+    {
+      path: "/Documents/welcome.md",
+      kind: "file",
+      content:
+        "# Welcome to Vela\n\nThis VFS persists in IndexedDB.\nFiles, settings and installed apps survive a reload.",
+      updatedAt: now,
+    },
+  ];
+}
+
 export interface Vfs {
   list(path: string): VfsEntry[];
   read(path: string): string;
   write(path: string, content: string): void;
   mkdir(path: string): void;
   remove(path: string): void;
+  /** Optional durability barrier for persistent backends. */
+  flush?(): Promise<void>;
 }
 
 export function normalizePath(path: string): string {
@@ -46,21 +76,13 @@ export class MemoryVfs implements Vfs {
   readonly #nodes = new Map<string, Node>();
 
   constructor() {
-    const now = Date.now();
-    this.#nodes.set("/", { kind: "dir", updatedAt: now });
-    this.#nodes.set("/Desktop", { kind: "dir", updatedAt: now });
-    this.#nodes.set("/Documents", { kind: "dir", updatedAt: now });
-    this.#nodes.set("/Desktop/readme.txt", {
-      kind: "file",
-      content: "Welcome to Vela.\n\nDouble-click an icon to open a window.",
-      updatedAt: now,
-    });
-    this.#nodes.set("/Documents/welcome.md", {
-      kind: "file",
-      content:
-        "# Welcome to Vela\n\nThis is an in-memory VFS.\nA persistent backend (IndexedDB / OPFS) lands in P3.",
-      updatedAt: now,
-    });
+    for (const entry of defaultVfsEntries()) {
+      this.#nodes.set(entry.path, {
+        kind: entry.kind,
+        content: entry.content,
+        updatedAt: entry.updatedAt,
+      });
+    }
   }
 
   list(path: string): VfsEntry[] {

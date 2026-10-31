@@ -1,8 +1,8 @@
 # Roadmap
 
-> 状态：P0 骨架已落地。工期为单人估算，按实际速度调整。
+> 状态：P0 骨架、P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P4 VPK 应用分发、P6 插件市场已落地（VPK 应用外置在 ShiningRay/vela-apps）；P5 工程化未完成；ZUI 不做；工期为单人估算，按实际速度调整。
 
-## P0 — 骨架（当前）
+## P0 — 骨架（完成）
 
 - [x] pnpm workspace、TypeScript strict、Vite、Vitest
 - [x] `@vela/core`：窗口管理器 / 应用注册表 / 命令 / VFS / 通知 / 快捷键 / 深相等信号
@@ -26,19 +26,19 @@
 - `pnpm dev:desktop` 打开 Vela 桌面，图标双击开窗；
 - `pnpm build` 产出前端静态文件。
 
-## P1 — 桌面壳完整
+## P1 — 桌面壳完整（完成）
 
-- [ ] 多实例窗口（`WindowRecord.appId`，同一应用可开多窗）
-- [ ] 窗口拖拽吸附（边缘检测、实时预览）
-- [ ] 窗口最小化动画、任务栏状态同步
-- [ ] 启动器搜索、键盘导航（↑/↓/Enter）
-- [ ] 菜单栏下拉菜单
-- [ ] 通知自动消失与堆叠
-- [ ] 窗口焦点丢失/恢复（`blur`）
-- [ ] 任务栏时钟分钟级刷新
-- [ ] 快捷键中心（⌘ Space、⌘ W、⌘ M、⌘ Q）
-- [ ] Node 运行时随应用打包（sidecar 或 SEA），不依赖系统 node
-- [ ] 服务健康检查、崩溃重启、随机端口、日志面板
+- [x] 多实例窗口（`WindowRecord.appId`，同一应用可开多窗）
+- [x] 窗口拖拽吸附（边缘检测、实时预览）
+- [x] 窗口最小化动画、任务栏状态同步
+- [x] 启动器搜索、键盘导航（↑/↓/Enter）
+- [x] 菜单栏下拉菜单
+- [x] 通知自动消失与堆叠
+- [x] 窗口焦点丢失/恢复（`blur`）
+- [x] 任务栏时钟分钟级刷新
+- [x] 快捷键中心（⌘ Space、⌘ W、⌘ M、⌘ Q）
+- [x] Node 运行时随应用打包（sidecar 或 SEA），不依赖系统 node
+- [x] 服务健康检查、崩溃重启、随机端口、日志面板
 
 验收：
 
@@ -46,7 +46,16 @@
 - Playwright 覆盖拖拽与吸附；
 - 键盘可完成“打开启动器 → 选中应用 → 回车开窗”。
 
-## P2 — 组件库
+验证记录：
+
+- `pnpm e2e`：10 项浏览器测试通过，覆盖多实例、搜索键盘导航、Service 面板、吸附预览、缩放/最大化/z 序、最小化同步、菜单、通知自动消失、blur 恢复、快捷键；
+- Tauri 产物使用 `Vela.app/Contents/Resources/runtime/node`，服务随机端口启动；
+- 强杀 Node 子进程后 2s 内自动重启并换新端口，前端重连；
+- 强杀 Tauri 主进程后 Node 子进程随 stdin 关闭退出。
+
+## P2 — 组件库（完成）
+
+状态：32 个组件全部实现，`@vela/ui` 导出完整组件 API；组件示例页在 `apps/components`。
 
 按优先级：
 
@@ -65,14 +74,21 @@
 
 验收：桌面内置应用（Files / Settings）全部改用组件库，无手写按钮/输入框。
 
-## P3 — 桌面应用与持久化
+验证记录：
 
-- [ ] VFS 换 IndexedDB / OPFS，刷新保留
-- [ ] 文件选择、导入/导出
-- [ ] 设置持久化（主题、快捷键、壁纸）
-- [ ] 通知权限与系统通知适配（Tauri 插件）
-- [ ] 内置应用：Editor、Terminal、Files 完整化
-- [ ] 应用包安装（`.vpk` zip：manifest + 入口 + 资源）
+- `packages/ui/test` 34 项 happy-dom 测试，覆盖 32 个组件的渲染与交互；
+- `pnpm dev:components` 打开 `http://localhost:5174`，Data / Desktop 分区均实测渲染；
+- `pnpm e2e` 增加组件示例页 smoke（共 11 项）；
+- Files 使用 `List`，Settings 使用 `ColorPicker`，两处 `grep` 无裸 `<button>` / `<input>`。
+
+## P3 — 桌面应用与持久化（完成）
+
+- [x] VFS 换 IndexedDB / OPFS，刷新保留
+- [x] 文件选择、导入/导出
+- [x] 设置持久化（主题、快捷键、壁纸）
+- [x] 通知权限与系统通知适配（Tauri 插件）
+- [x] 内置应用：Editor、Terminal、Files 完整化
+- [x] 应用包安装（`.vpk` zip：manifest + 入口 + 资源）
 
 验收：
 
@@ -80,23 +96,28 @@
 - 安装一个本地应用包并启动；
 - 系统通知可在 macOS/Windows 弹出（Tauri 插件）。
 
-## P4 — 应用迁移
+验证记录：
 
-顺序：
+- `pnpm test` 77 项通过，含 IndexedDB VFS、设置持久化、`.vpk` 解析与通知桥；
+- `pnpm e2e` 15 项通过：文件导入/导出后刷新仍在、主题/壁纸/快捷键刷新恢复、Editor 与 Terminal 共用 VFS、`.vpk` 安装→启动→刷新后图标恢复；
+- `.vpk` 入口在 `sandbox="allow-scripts"` iframe 中运行，CSS/JS 内联，CSP 阻断网络，详见 [VPK.md](VPK.md)；
+- Tauri notification 插件接入，macOS 首启出现通知权限提示，Rust `show()` 返回成功；Windows 未实测；
+- `pnpm build:desktop` 产出 `Vela.app` 122.28 MB、DMG 38.91 MB。
 
-1. `emerald-calc`（科学计算器，576 行）
-2. `citrine-sheets`（电子表格，3,372 行）
-3. `citrine-market-terminal`（行情终端，3,036 行）
-4. `agentos-desk`（桌面客户端，2,054 行）
-5. `emerald-zui`（无限画布桌面，2,012 行）
+## P4 — VPK 应用分发（完成，应用已外置）
 
-每个应用：
+2026-10-31 用户决定：三个 demo 通过 `.vpk` 分发，ZUI 不做；计算器移出内置应用。应用源码、构建与发布随后移入独立公开仓 [ShiningRay/vela-apps](https://github.com/ShiningRay/vela-apps)，Vela 主仓只保留 `.vpk` 安装器。
 
-- 先迁移纯逻辑（计算引擎、撮合、公式）；
-- 再迁移视图；
-- 最后接入桌面壳，产出可双击的包。
+- [x] `scientific-calculator`：Solid/TS 计算器，独立构建为 `scientific-calculator.vpk`；
+- [x] `citrine-sheets`：复用 Citrine Sheets Ruby/Opal demo，打包为 `citrine-sheets.vpk`；
+- [x] `citrine-market-terminal`：复用行情终端 Ruby/Opal demo，打包为 `citrine-market-terminal.vpk`；
+- ~~`emerald-zui`~~：不做（用户决定）。
 
-验收：功能对齐原应用；纯逻辑单测通过。
+验收：
+
+- `vela-apps` 的 [v0.1.0 Release](https://github.com/ShiningRay/vela-apps/releases/tag/v0.1.0) 提供三个 `.vpk` 与 `SHA256SUMS`；
+- Settings → App packages → Install `.vpk` 可安装；
+- 包在 `sandbox="allow-scripts"` iframe 中启动。VPK 上限为单文件 5 MB、总计 6 MB。
 
 ## P5 — 分发与工程化
 
@@ -105,6 +126,15 @@
 - [ ] macOS 签名与公证、Windows 签名
 - [ ] 自动更新（Tauri updater）
 - [ ] 文档站与组件示例站
+
+## P6 — 插件市场（完成）
+
+- [x] `services/marketplace`：独立 Express 服务，JSON 元数据 + 文件存储，上传/搜索/下载 API 与 Web 管理页；
+- [x] 上传校验：ZIP、manifest、semver、入口、5 MB/6 MB 限制、保留内置 id；
+- [x] 上传鉴权：`MARKETPLACE_ADMIN_TOKEN` Bearer token；GET/OPTIONS CORS 开放；
+- [x] Vela 内置 Plugin Market：搜索、安装、重装、已安装版本提示；Settings 可配置 Marketplace URL；
+- [x] e2e：上传 VPK → 搜索 → 安装 → 启动包；
+- 限制：单管理员 MVP，无用户体系、签名校验、审核流、对象存储与生产部署。
 
 ## 不做
 

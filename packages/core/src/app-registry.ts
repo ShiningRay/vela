@@ -7,6 +7,7 @@ export interface AppDefinition {
   icon: string;
   component: Component;
   singleton?: boolean;
+  defaultGeometry?: { width: number; height: number };
 }
 
 type Signal<T> = readonly [

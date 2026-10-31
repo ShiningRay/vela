@@ -1,12 +1,17 @@
 export type HotkeyHandler = (event: KeyboardEvent) => void;
 
+const KEY_ALIASES: Record<string, string> = {
+  " ": "Space",
+  Spacebar: "Space",
+};
+
 export function normalizeCombo(event: KeyboardEvent): string {
   const parts: string[] = [];
   if (event.ctrlKey) parts.push("Ctrl");
   if (event.altKey) parts.push("Alt");
   if (event.shiftKey) parts.push("Shift");
   if (event.metaKey) parts.push("Meta");
-  const key = event.key.length === 1 ? event.key.toUpperCase() : event.key;
+  const key = KEY_ALIASES[event.key] ?? (event.key.length === 1 ? event.key.toUpperCase() : event.key);
   parts.push(key);
   return parts.join("+");
 }

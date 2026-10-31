@@ -1,0 +1,133 @@
+body {
+  margin: 0;
+  background: var(--vela-wallpaper);
+  color: var(--vela-color-text);
+  font-family: var(--vela-font-sans);
+}
+
+.gallery {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 36px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gallery__hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--vela-color-border);
+}
+
+.gallery__eyebrow {
+  color: var(--vela-color-accent);
+  font-family: var(--vela-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.gallery h1 {
+  margin: 6px 0 4px;
+  font-size: 32px;
+  letter-spacing: -0.03em;
+}
+
+.gallery__hero p {
+  margin: 0;
+  color: var(--vela-color-muted);
+  font-size: 13px;
+}
+
+.gallery-section {
+  border: 1px solid var(--vela-color-border);
+  border-radius: var(--vela-radius-lg);
+  background: rgba(23, 32, 51, 0.72);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.gallery-section__header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--vela-color-border);
+  background: rgba(2, 6, 23, 0.18);
+}
+
+.gallery-section__header h2 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+}
+
+.gallery-section__header p {
+  margin: 3px 0 0;
+  color: var(--vela-color-muted);
+  font-size: 12px;
+}
+
+.gallery-section__body {
+  padding: 18px;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.gallery-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.gallery-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.gallery-panel {
+  padding: 10px;
+  border: 1px dashed var(--vela-color-border);
+  border-radius: var(--vela-radius-md);
+  color: var(--vela-color-muted);
+  font-size: 12px;
+}
+
+.gallery-tooltip-target,
+.gallery-context-target {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border: 1px dashed var(--vela-color-border);
+  border-radius: var(--vela-radius-md);
+  color: var(--vela-color-muted);
+  font-size: 12px;
+  cursor: default;
+}
+
+.gallery-context-target {
+  cursor: context-menu;
+}
+
+@media (max-width: 760px) {
+  .gallery {
+    padding: 22px 14px 60px;
+  }
+
+  .gallery__hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+}

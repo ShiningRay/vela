@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vela Plugin Market</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">VELA · PLUGIN MARKET</p>
+        <h1>插件市场</h1>
+        <p class="lede">上传 .vpk，搜索并安装到 Vela Desktop。</p>
+      </div>
+      <form id="search-form" class="search" role="search">
+        <input id="search" type="search" placeholder="搜索名称、作者、标签" aria-label="搜索插件" />
+        <button type="submit">搜索</button>
+      </form>
+    </header>
+
+    <main>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>已上架</h2>
+          <span id="count" class="muted"></span>
+        </div>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+        <div id="plugins" class="grid"></div>
+      </section>
+
+      <section class="panel upload-panel">
+        <h2>上传 VPK</h2>
+        <p class="muted">需要管理员 token。包内 manifest.json 的 id、name、version、entry 会被校验。</p>
+        <form id="upload-form">
+          <label>VPK 文件<input id="file" name="file" type="file" accept=".vpk,application/zip" required /></label>
+          <label>管理员 token<input id="token" type="password" autocomplete="off" required /></label>
+          <label>描述<textarea id="description" rows="3" maxlength="500" placeholder="一句话介绍这个插件"></textarea></label>
+          <label>作者<input id="author" maxlength="80" placeholder="ShiningRay" /></label>
+          <label>标签<input id="tags" maxlength="200" placeholder="calculator, solid" /></label>
+          <button type="submit" class="primary">上传并上架</button>
+          <p id="upload-status" class="status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

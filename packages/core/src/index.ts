@@ -7,13 +7,16 @@ export type { Command } from "./commands";
 export { HotkeyRegistry, normalizeCombo } from "./hotkeys";
 export type { HotkeyHandler } from "./hotkeys";
 
-export { NotificationCenter } from "./notifications";
-export type { Notification } from "./notifications";
+export { DEFAULT_NOTIFICATION_TIMEOUT, NotificationCenter } from "./notifications";
+export type { Notification, NotificationCenterOptions, NotificationOptions } from "./notifications";
 
 export { batch, createDeepSignal, deepEqual, untrack } from "./signals";
 
-export { baseName, MemoryVfs, normalizePath, parentPath } from "./vfs";
-export type { Vfs, VfsEntry, VfsEntryKind } from "./vfs";
+export { baseName, defaultVfsEntries, MemoryVfs, normalizePath, parentPath } from "./vfs";
+export type { Vfs, VfsEntry, VfsEntryKind, VfsSeed } from "./vfs";
+
+export { IndexedDbVfs, openPersistentVfs } from "./indexeddb-vfs";
+export type { IndexedDbVfsOptions } from "./indexeddb-vfs";
 
 export {
   clampGeometry,

@@ -9,6 +9,8 @@ export interface WindowState {
 
 export interface WindowRecord {
   id: string;
+  /** Application that owns this window. Several windows may share one appId. */
+  appId: string;
   title: string;
   geometry: Geometry;
   state: WindowState;
@@ -17,6 +19,8 @@ export interface WindowRecord {
 }
 
 export interface OpenWindowOptions {
+  /** Defaults to the window id, preserving the original single-instance behaviour. */
+  appId?: string;
   title?: string;
   geometry: Geometry;
   minWidth?: number;
@@ -65,16 +69,27 @@ export function halfGeometry(side: "left" | "right", viewport: Viewport): Geomet
 export class WindowManager {
   readonly #records: Signal<WindowRecord[]>;
   readonly #order: Signal<string[]>;
+  readonly #focused: Signal<boolean>;
   #viewport: Viewport;
 
   constructor(viewport: Viewport = { width: 1280, height: 800 }) {
     this.#viewport = viewport;
     this.#records = createSignal<WindowRecord[]>([]);
     this.#order = createSignal<string[]>([]);
+    this.#focused = createSignal(true);
   }
 
   get viewport(): Viewport {
     return this.#viewport;
+  }
+
+  /**
+   * Whether the desktop itself has focus. A browser window that loses focus
+   * (another app, another window) must stop pretending one of its windows is
+   * active; the window stack itself is kept intact for the restore path.
+   */
+  get focused(): boolean {
+    return this.#focused[0]();
   }
 
   get windows(): WindowRecord[] {
@@ -88,12 +103,28 @@ export class WindowManager {
     return this.#order[0]();
   }
 
+  /** Topmost non-minimized window id, or undefined while the desktop is blurred. */
+  get activeWindowId(): string | undefined {
+    if (!this.focused) return undefined;
+    const order = this.#order[0]();
+    for (let index = order.length - 1; index >= 0; index -= 1) {
+      const id = order[index];
+      const record = id ? this.record(id) : undefined;
+      if (record && !record.state.minimized) return record.id;
+    }
+    return undefined;
+  }
+
   record(id: string): WindowRecord | undefined {
     return this.#records[0]().find((record) => record.id === id);
   }
 
   has(id: string): boolean {
     return this.record(id) !== undefined;
+  }
+
+  windowsFor(appId: string): WindowRecord[] {
+    return this.windows.filter((record) => record.appId === appId);
   }
 
   open(id: string, options: OpenWindowOptions): WindowRecord {
@@ -103,6 +134,7 @@ export class WindowManager {
 
     const record: WindowRecord = {
       id,
+      appId: options.appId ?? id,
       title: options.title ?? id,
       geometry: clampGeometry(
         options.geometry,
@@ -117,6 +149,7 @@ export class WindowManager {
 
     this.#records[1]((records) => [...records, record]);
     this.#order[1]((order) => [...order, id]);
+    this.#focused[1](true);
     return record;
   }
 
@@ -127,12 +160,22 @@ export class WindowManager {
 
   focus(id: string): void {
     if (!this.has(id)) return;
+    this.#focused[1](true);
     this.#order[1]((order) => [...order.filter((current) => current !== id), id]);
   }
 
+  /** Drop the active-window state when the desktop loses OS focus. */
+  blur(): void {
+    this.#focused[1](false);
+  }
+
+  /** Restore the previous z-order when the desktop regains OS focus. */
+  restoreFocus(): void {
+    this.#focused[1](true);
+  }
+
   active(id: string): boolean {
-    const order = this.#order[0]();
-    return order.length > 0 && order[order.length - 1] === id;
+    return this.activeWindowId === id;
   }
 
   zIndex(id: string): number {

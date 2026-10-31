@@ -37,13 +37,15 @@ vela/
     core/      @vela/core     窗口管理、应用注册、命令、VFS、通知、快捷键、深相等信号
     remote/    @vela/remote   权威 Hub / 镜像 Session / Wire 传输（propose·patch·release·barrier）
     theme/     @vela/theme    设计令牌与 CSS 变量
-    ui/        @vela/ui       基础组件 + 窗口框 / 任务栏 / 菜单栏 / 桌面图标
-    desktop/   @vela/desktop  桌面 shell、启动器、内置应用（About / Files / Service / Settings）
+    ui/        @vela/ui       32 个组件（表单 / 反馈 / 布局 / 数据 / 桌面浮层）+ 窗口框 / 任务栏 / 菜单栏
+    desktop/   @vela/desktop  桌面 shell、启动器、内置应用（About / Files / Editor / Terminal / Plugin Market / Service / Settings）
   apps/
-    demo/      @vela/app-demo     最小 Solid + @vela/core 示例
-    desktop/   @vela/app-desktop  Tauri 主应用
+    demo/      @vela/app-demo        最小 Solid + @vela/core 示例
+    components/@vela/app-components  组件示例页（全部 @vela/ui 组件）
+    desktop/   @vela/app-desktop     Tauri 主应用
   services/
-    demo/      @vela/service-demo  Node/TS 后台服务，WebSocket 发布信号
+    demo/         @vela/service-demo  Node/TS 后台服务，WebSocket 发布信号
+    marketplace/  @vela/marketplace   VPK 插件市场：上传、搜索、下载与 Web 管理页
   docs/
   assets/
 ```
@@ -60,8 +62,17 @@ pnpm install
 # 最小示例（浏览器）
 pnpm dev
 
+# 组件示例页（全部 @vela/ui 组件）
+pnpm dev:components
+
 # 单独运行后台服务（浏览器调试时手动起；Tauri 会自动起）
 pnpm dev:service
+
+# 导入 vela-apps 的三个演示 VPK（需先构建 vela-apps）
+pnpm seed:market
+
+# 插件市场服务（默认 http://127.0.0.1:4320）
+MARKETPLACE_ADMIN_TOKEN=change-me pnpm dev:market
 
 # 桌面开发（Vite + Tauri 窗口，HMR 生效；自动启动后台服务）
 pnpm dev:desktop
@@ -71,39 +82,52 @@ pnpm typecheck
 pnpm test
 pnpm build
 
+# 浏览器端 E2E（首次先装 Chromium）
+pnpm e2e:install
+pnpm e2e
+
 # 打包桌面应用
 pnpm build:desktop
 ```
 
-`pnpm dev` 打开 `http://localhost:5173` 的 Counter 示例。`pnpm dev:desktop` 会先启动 Vite，再由 Tauri 打开原生窗口；Rust 侧会启动 `services/demo` 的 Node 服务（`ws://127.0.0.1:4317`），退出时停止它。浏览器调试时用 `pnpm dev:service` 手动起服务。
+`pnpm dev` 打开 `http://localhost:5173` 的 Counter 示例，`pnpm dev:components` 打开 `http://localhost:5174` 的组件示例页。`pnpm dev:desktop` 会先启动 Vite，再由 Tauri 打开原生窗口；Rust 侧用随包暂存的 Node 运行时启动 `services/demo`，服务绑定随机空闲端口，实际 `ws://` 地址通过 supervisor 状态事件交给前端。浏览器调试时用 `pnpm dev:service` 手动起服务（默认 `ws://127.0.0.1:4317`）。如果本机已有可用的 Chromium、但无法访问 Playwright CDN，可为 `pnpm e2e` 设置 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`。
+
+三个 VPK demo 已独立到 [ShiningRay/vela-apps](https://github.com/ShiningRay/vela-apps)，构建产物在其 `dist/vpk/` 生成并通过 [v0.1.0 Release](https://github.com/ShiningRay/vela-apps/releases/tag/v0.1.0) 发布；Vela 只保留 `.vpk` 安装器。
+
+Plugin Market 默认连接 `http://127.0.0.1:4320`，可在 Settings → Marketplace URL 改为部署后的市场地址。市场服务说明见 [services/marketplace/README.md](services/marketplace/README.md)。
 
 ## 当前状态
 
-骨架阶段（P0）：
+P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插件市场完成；P4 的三个 VPK demo 独立到 [vela-apps](https://github.com/ShiningRay/vela-apps)，ZUI 不做：
 
-- `@vela/core`：窗口管理器、应用注册表、命令、VFS、通知、快捷键、深相等信号，带 Vitest 单测；
+- `@vela/core`：窗口管理器（多实例 `appId`、blur 恢复、吸附、最大化）、应用注册表、命令、VFS（`MemoryVfs` / `IndexedDbVfs`）、通知（自动消失 + 可选宿主桥）、快捷键（Space 归一化）、深相等信号，带 Vitest 单测；
 - `@vela/remote`：权威 `RemoteHub`、镜像 `RemoteSession`、`WsWire` / `MemoryWire`，支持 `propose` / `patch` / `release` / `barrier`；权威侧用平台无关的 `createSource`，不依赖 Solid；
-- `@vela/ui`：Button / IconButton / Stack / Row / Label / MenuList / WindowFrame / Taskbar / MenuBar / DesktopIcon；
-- `@vela/desktop`：DesktopShell + About / Files / Service / Settings 四个内置应用；
+- `@vela/ui`：32 个组件，覆盖表单（Input / Textarea / Checkbox / Switch / Select / Slider / NumberInput）、反馈（Dialog / Confirm / Toast / Alert / Progress / Spinner / EmptyState）、布局（Tabs / Accordion / Divider / Breadcrumb / Pagination / Toolbar / StatusBar）、数据（List / Table / Tree / KV / Tag / Badge）、桌面浮层（Popover / Tooltip / ContextMenu / ColorPicker / DatePicker）；窗口框含吸附预览与最小化过渡；
+- `@vela/desktop`：DesktopShell + About / Files / Editor / Terminal / Plugin Market / Service / Settings；Plugin Market 可搜索、安装远端 `.vpk`；Files 支持导入/导出、新建、删除与路径面包屑；Settings 持久化主题、壁纸、Marketplace URL 与快捷键，并可安装 `.vpk` 应用包；Editor 与 Terminal 共用持久 VFS；
 - `@vela/app-demo`：Counter 与深相等行为演示；
-- `@vela/app-desktop`：Tauri 2 壳、Node 服务 supervisor、图标；
-- `@vela/service-demo`：Node/TS WebSocket 服务，发布 `tasks:list` / `service:status` / `clock` 三个信号。
+- `@vela/app-components`：全部组件的 Vite 示例页；
+- `@vela/app-desktop`：Tauri 2 壳、Node 服务 supervisor（随机端口、健康检查、崩溃重启、日志）、notification 插件、图标；
+- `@vela/service-demo`：Node/TS WebSocket 服务，发布 `tasks:list` / `service:status` / `clock` 三个信号；
+- `@vela/marketplace`：独立插件市场 HTTP 服务，提供 `.vpk` 上传、搜索、下载与 Web 管理页；上传需 `MARKETPLACE_ADMIN_TOKEN`，存储为本地 JSON + 文件。
 
 已在 macOS 本机验证：
 
-- `pnpm typecheck`、`pnpm test`（25 项）、`pnpm build` 全绿；
+- `pnpm typecheck`、`pnpm test`（80 项，其中 `@vela/ui` 35 项、P3 持久化/包测试、Marketplace API 2 项）、`pnpm build` 全绿；
+- `pnpm e2e`（17 项）通过：桌面 10 项、组件示例页 smoke、VFS 导入/导出刷新保留、设置刷新恢复、Editor/Terminal 共享 VFS、通用 `.vpk` 安装→启动→刷新恢复、Marketplace 网页上传与 Vela 内搜索→安装→启动；
+- `pnpm dev:components`：Primitives / Feedback / Layout / Data / Desktop 五个分区均正常渲染；
 - `pnpm dev`：Counter 渲染，点击 +1 后 `count=1 / double=2 / effect runs=2`，写入结构相等对象后 effect 次数保持 2；
-- `pnpm dev:desktop`：桌面图标单击选中、双击开窗，窗口拖拽、最大化、最小化、任务栏恢复、关闭与启动器均正常；
-- Service 应用：显示 `Connected to service`、连接数、uptime、PID、时钟与任务列表；在输入框添加任务后，前端乐观写入并通过 `propose → patch` 从服务端回流；
-- `pnpm build:desktop`：产出 `Vela.app`（9.82 MB）与 `Vela_0.1.0_aarch64.dmg`（2.77 MB）；App 启动时自动拉起 Node 服务（`127.0.0.1:4317`）；
-- 强制 `SIGKILL` 桌面主进程后，Node 服务因 stdin 管道关闭自动退出，端口释放（父进程守护）。
+- `pnpm build:desktop`：产出 `Vela.app`（122.28 MB，含 Node 运行时）与 `Vela_0.1.0_aarch64.dmg`（38.91 MB）；
+- 打包应用启动后子进程为 `Vela.app/Contents/Resources/runtime/node`，服务监听随机端口，前端成功连接；
+- 强杀 Node 子进程后 2s 内自动重启并换新端口，前端重连；强杀 Tauri 主进程后 Node 子进程随 stdin 关闭退出；
+- `VELA_TEST_NOTIFICATION=1` 启动打包应用时 Rust `show()` 返回成功，macOS 显示通知权限提示。
 
 已知限制：
 
-- 生产分发仍依赖系统 `node`；正式发布需把 Node 运行时作为 sidecar / SEA 单文件打包（当前用 `VELA_NODE` 指定解释器）；
-- 所有应用窗口按 app id 单例，多实例窗口未实现；
-- VFS 是内存实现，刷新后丢失；
-- 组件库只覆盖桌面骨架所需的少量组件；
+- Node 运行时按当前构建平台暂存；跨平台构建需在目标平台执行 `prepare-node-runtime`，三平台 CI 尚未接；
+- 健康检查是 TCP 可达性 + 子进程存活，不是业务级探针；重启为固定 2s 轮询，无退避；
+- 组件库覆盖 P2 清单，未包含虚拟列表、富文本、数据网格等复杂组件；
+- 通知最多同屏 3 条；系统通知需用户在 macOS/Windows 授权，Windows 未实测；
+- `.vpk` v1 只支持根 `manifest.json` + 单个 HTML 入口；CSS/JS 以内联方式注入，其他资源经 blob URL；单文件上限 5 MB、总计 6 MB；无签名/发布者身份，详见 [docs/VPK.md](docs/VPK.md)；
 - Tauri 打包未做签名/公证。
 
 ## 命名

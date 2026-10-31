@@ -30,7 +30,8 @@
     "active": true,
     "targets": "all",
     "resources": {
-      "../../../services/demo/dist/server.cjs": "services/demo/server.cjs"
+      "../../../services/demo/dist/server.cjs": "services/demo/server.cjs",
+      "runtime": "runtime"
     },
     "icon": [
       "icons/32x32.png",

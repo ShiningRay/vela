@@ -1,6 +1,12 @@
-import { createSignal, For, Show } from "solid-js";
-import { Button, Label, Row, Stack } from "@vela/ui";
-import { SERVICE_URL, serviceSession, serviceWire } from "../services";
+import { createSignal } from "solid-js";
+import { Button, Input, Label, List, Row, Stack } from "@vela/ui";
+import {
+  serviceConnected,
+  serviceHealthy,
+  serviceLogs,
+  serviceSession,
+  serviceUrl,
+} from "../services";
 import type { ServiceStatus, Task } from "../services";
 
 const initialStatus: ServiceStatus = {
@@ -14,11 +20,10 @@ export function ServiceApp() {
   const status = serviceSession.signal<ServiceStatus>("service:status", initialStatus);
   const tasks = serviceSession.signal<Task[]>("tasks:list", []);
   const clock = serviceSession.signal<string>("clock", "—");
-  const [connected, setConnected] = createSignal(serviceWire.connected);
   const [draft, setDraft] = createSignal("");
-
-  serviceWire.onOpen(() => setConnected(true));
-  serviceWire.onClose(() => setConnected(false));
+  const connected = serviceConnected;
+  const healthy = () => serviceHealthy() || connected();
+  const logs = serviceLogs;
 
   const currentTasks = () => tasks.get() ?? [];
 
@@ -36,6 +41,13 @@ export function ServiceApp() {
     tasks.set(currentTasks().map((task) => (task.id === id ? { ...task, done: !task.done } : task)));
   };
 
+  const taskItems = () =>
+    currentTasks().map((task) => ({
+      id: task.id,
+      label: task.title,
+      icon: task.done ? "✓" : "○",
+    }));
+
   const clockText = () => {
     const value = clock();
     if (!value || value === "—") return "—";
@@ -48,7 +60,8 @@ export function ServiceApp() {
       <Row gap={8}>
         <span class="vela-status-dot" data-online={connected() ? "true" : "false"} />
         <Label>{connected() ? "Connected to service" : "Waiting for service…"}</Label>
-        <Label muted>{SERVICE_URL}</Label>
+        <Label muted>{serviceUrl()}</Label>
+        <Label muted>{healthy() ? "healthy" : "unhealthy"}</Label>
       </Row>
 
       <Row gap={14}>
@@ -63,8 +76,8 @@ export function ServiceApp() {
       </Row>
 
       <Row gap={8}>
-        <input
-          class="vela-input"
+        <Input
+          aria-label="New task"
           value={draft()}
           placeholder="New task…"
           onInput={(event) => setDraft(event.currentTarget.value)}
@@ -77,25 +90,14 @@ export function ServiceApp() {
         </Button>
       </Row>
 
-      <div class="vela-task-list">
-        <Show when={currentTasks().length > 0} fallback={<Label muted>No tasks published yet.</Label>}>
-          <For each={currentTasks()}>
-            {(task) => (
-              <button
-                type="button"
-                class="vela-task-row"
-                data-done={task.done ? "true" : "false"}
-                onClick={() => toggleTask(task.id)}
-              >
-                <span class="vela-task-row__check" aria-hidden="true">
-                  {task.done ? "✓" : "○"}
-                </span>
-                <span>{task.title}</span>
-              </button>
-            )}
-          </For>
-        </Show>
-      </div>
+      <List label="Tasks" items={taskItems()} onSelect={toggleTask} empty="No tasks published yet." />
+
+      <Stack gap={6}>
+        <Label>Service log</Label>
+        <pre class="vela-service-log">
+          {logs().slice(-80).join("\n") || "No service logs yet."}
+        </pre>
+      </Stack>
 
       <Label muted>
         The list is owned by the Node service. Writes are optimistic proposals; the authority broadcasts

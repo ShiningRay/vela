@@ -87,4 +87,44 @@ describe("WindowManager", () => {
     expect(windows.has("a")).toBe(false);
     expect(windows.windows).toEqual([]);
   });
+
+  it("tracks multiple windows for one app id", () => {
+    const windows = new WindowManager();
+    windows.open("files", { appId: "files", geometry: { x: 0, y: 0, width: 300, height: 200 } });
+    windows.open("files-2", { appId: "files", geometry: { x: 20, y: 20, width: 300, height: 200 } });
+    windows.open("about", { geometry: { x: 40, y: 40, width: 300, height: 200 } });
+
+    expect(windows.windowsFor("files").map((record) => record.id)).toEqual(["files", "files-2"]);
+    expect(windows.windowsFor("about").map((record) => record.appId)).toEqual(["about"]);
+    expect(windows.windowsFor("missing")).toEqual([]);
+  });
+
+  it("drops and restores the active window when the desktop blurs", () => {
+    const windows = new WindowManager();
+    windows.open("a", { geometry: { x: 0, y: 0, width: 300, height: 200 } });
+    windows.open("b", { geometry: { x: 20, y: 20, width: 300, height: 200 } });
+
+    expect(windows.activeWindowId).toBe("b");
+    windows.blur();
+    expect(windows.focused).toBe(false);
+    expect(windows.activeWindowId).toBeUndefined();
+    expect(windows.active("b")).toBe(false);
+
+    windows.restoreFocus();
+    expect(windows.focused).toBe(true);
+    expect(windows.activeWindowId).toBe("b");
+  });
+
+  it("reports the next topmost window after the active one is minimized", () => {
+    const windows = new WindowManager();
+    windows.open("a", { geometry: { x: 0, y: 0, width: 300, height: 200 } });
+    windows.open("b", { geometry: { x: 20, y: 20, width: 300, height: 200 } });
+
+    windows.minimize("b");
+    expect(windows.activeWindowId).toBe("a");
+    expect(windows.active("b")).toBe(false);
+
+    windows.minimize("a");
+    expect(windows.activeWindowId).toBeUndefined();
+  });
 });

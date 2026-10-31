@@ -63,24 +63,31 @@ Citrine 的“每个带 block 的节点一个 Effect”在 Solid 中由编译器
 
 ### 3.2 应用注册表
 
-`AppRegistry` 保存 `{ id, title, icon, component, singleton }`。桌面图标网格与启动器都读同一份 signal；安装/卸载应用只更新注册表。
+`AppRegistry` 保存 `{ id, title, icon, component, singleton, defaultGeometry }`。桌面图标网格与启动器都读同一份 signal；安装/卸载应用只更新注册表。
 
-窗口与应用通过 **app id = window id** 关联（P0 只支持单例）。多实例窗口需要在 `WindowRecord` 上增加 `appId`，窗口内容按 `appId` 查组件；已列入 P2。
+`WindowRecord` 带独立的 `appId`，窗口 id 由 shell 生成（首个为 app id，后续为 `appId-N`）。窗口层按 **窗口 id** 做 keyed 渲染，几何或最小化状态变化只更新该窗口的 props；同一应用可开多窗，`singleton` 为 true 的应用仍只保留一个窗口。
 
 ### 3.3 VFS 接口
 
-`Vfs` 是接口，`MemoryVfs` 是当前实现。未来接入 IndexedDB / OPFS 时只换实现，不改应用。路径规则：
+`Vfs` 是同步接口，当前有两个实现：
+
+- `MemoryVfs`：测试与无 IndexedDB 环境；
+- `IndexedDbVfs`：启动时加载 IndexedDB 快照到内存，读操作保持同步，写操作先更新内存再排队事务；`flush()` 提供持久化屏障。
+
+`openPersistentVfs()` 优先 IndexedDB，失败时回退内存实现。路径规则：
 
 - 归一化为以 `/` 开头的绝对路径；
 - 写入自动创建父目录；
 - 删除目录递归删除子项；
 - 根目录不可写、不可删。
 
+应用包、设置与文件共享同一套持久化；编辑器和终端只依赖 `Vfs` 接口。
+
 ### 3.4 命令、快捷键、通知
 
 - `CommandRegistry`：命令 id + 标题 + 执行函数，供启动器/菜单/快捷键复用；
-- `HotkeyRegistry`：显式 `attach(window)`，不在构造时碰全局对象，便于 Node 测试；
-- `NotificationCenter`：通知列表是 signal，桌面角落渲染，点击关闭。
+- `HotkeyRegistry`：显式 `attach(window)`，不在构造时碰全局对象，便于 Node 测试；桌面从 `SettingsStore` 读取并热替换快捷键；
+- `NotificationCenter`：通知列表是 signal，桌面角落渲染，点击关闭；`onPush` 宿主桥把通知镜像到 Tauri 系统通知。
 
 ### 3.5 桌面 OS 隐喻
 
@@ -98,6 +105,42 @@ DesktopShell
 
 它不是真正的操作系统：单用户、单会话、没有进程/权限/网络栈。窗口是页面内的 DOM，不是原生窗口。
 
+### 3.6 组件库
+
+`@vela/ui` 提供 P2 的 32 个组件，按职责分为五组：
+
+- 表单：Input / Textarea / Checkbox / Switch / Select / Slider / NumberInput；
+- 反馈：Dialog / Confirm / Toast / Alert / Progress / Spinner / EmptyState；
+- 布局：Tabs / Accordion / Divider / Breadcrumb / Pagination / Toolbar / StatusBar；
+- 数据：List / Table / Tree / KV / Tag / Badge；
+- 桌面浮层：Popover / Tooltip / ContextMenu / ColorPicker / DatePicker。
+
+组件只读声明的 props，不依赖 `@vela/desktop`；交互组件使用原生按钮语义或显式 ARIA role，键盘路径以 Tab / Enter / Escape 为底线。测试使用 Vitest + happy-dom，`apps/components` 提供全部组件的 Vite 示例页。
+
+### 3.7 应用包
+
+`.vpk` 是 ZIP 包，根目录必须有 `manifest.json` 与 HTML 入口。安装器在 [packages.tsx](../packages/desktop/src/packages.tsx) 中：
+
+1. `fflate` 解包，限制 64 个文件 / 单文件 5 MB / 总计 6 MB，拒绝绝对路径与 `..`；
+2. 校验 manifest id、版本、入口与保留 id；
+3. 写入 VFS 的 `/Apps/<id>/`，注册到 `AppRegistry`；
+4. 启动时扫描 `/Apps`，恢复已安装应用。
+
+应用入口运行在 `sandbox="allow-scripts"` iframe 中，注入的 CSP 阻断网络；CSS/JS 资源内联，其他资源通过 blob URL 暴露。模块脚本的 `type="module"` 等属性会保留，保证 Vite 构建入口按 defer 语义执行。具体格式见 [VPK.md](VPK.md)。
+
+P4 的 Calculator、Citrine Sheets、Market Terminal 已移到独立仓 [ShiningRay/vela-apps](https://github.com/ShiningRay/vela-apps)：该仓负责源码、打包与 GitHub Release，Vela 主仓只保留 `.vpk` 安装器与沙箱。
+
+### 3.8 插件市场
+
+`services/marketplace` 是独立的 Express 服务，不与桌面进程耦合：
+
+- `GET /api/plugins` 搜索/分页，`GET /api/plugins/:id/download` 下载最新 VPK；
+- `POST /api/plugins` 接收 multipart `.vpk`，校验 ZIP、manifest、semver、入口与 5 MB/6 MB 限制，计算 SHA-256；需要 `MARKETPLACE_ADMIN_TOKEN`；
+- 元数据原子写入 `data/plugins.json`，文件存 `data/files/<id>/<version>.vpk`；
+- `/` 提供上传与浏览的 Web 管理页，GET/OPTIONS 开放 CORS，上传只允许 Bearer token。
+
+Vela 内置的 Plugin Market 读取 `DesktopSettings.marketplaceUrl`（默认 `http://127.0.0.1:4320`），列出插件后把下载的 VPK 交给现有 `parseVpk → installPackage → registerPackageApp` 流程，安装后立即出现在桌面。
+
 ## 4. 包边界
 
 | 包 | 可以依赖 | 禁止依赖 |
@@ -107,6 +150,7 @@ DesktopShell
 | `@vela/ui` | `core`（仅类型）、`theme`、`solid-js` | `desktop` |
 | `@vela/desktop` | `core`、`ui`、`theme`、`solid-js` | Tauri API |
 | `apps/desktop` | 以上 + `@tauri-apps/api` | 框架内部实现 |
+| `services/marketplace` | `express`、`multer`、`fflate`、`semver` | 桌面包、DOM |
 
 `@vela/desktop` 不直接 import Tauri，保证它能在普通浏览器里运行；需要本地文件、通知、系统集成时，由 app 层注入适配器。
 
@@ -123,8 +167,9 @@ DesktopShell
 ## 6. 测试策略
 
 - `@vela/core` 的纯逻辑（几何、VFS、深相等、注册表）用 Vitest，Node 环境；
-- UI 组件后续加 happy-dom / `@solidjs/testing-library`；
-- 桌面行为（拖拽、缩放、吸附、启动器）用 Playwright 在浏览器里验证；
+- `@vela/ui` 组件用 Vitest + happy-dom + `@solidjs/testing-library`，覆盖渲染、事件与键盘路径；
+- 桌面行为（拖拽、缩放、吸附、启动器、通知、快捷键）用 Playwright 在浏览器里验证；
+- `apps/components` 提供全部组件的 Vite 示例页，并有 Playwright smoke；
 - Tauri 壳单独冒烟：`tauri dev` 能开窗、`tauri build` 能出包。
 
 ## 7. 与 Citrine 的差异清单（刻意保留）
@@ -141,19 +186,20 @@ DesktopShell
 
 ```
 Tauri main (Rust)
-├─ ServiceState: child + status
-├─ setup(): spawn node services/demo/dist/server.cjs
-├─ commands: service_status / start / stop / restart
+├─ ServiceState: child + status + desired_running + logs + ready/start timestamps
+├─ setup(): spawn bundled Node runtime + services/demo/server.cjs
+├─ watchdog: 子进程存活、READY 超时、TCP 健康检查，失败自动重启
+├─ commands: service_status / start / stop / restart / health / logs
 └─ Exit: kill child；stdin 管道关闭兜底
 
-Node service (127.0.0.1:4317)
+Node service (127.0.0.1:随机端口)
 ├─ createSource(...) 权威状态
 ├─ RemoteHub: snapshot + patch / release / barrier
 └─ propose 处理：校验收到的值，写回权威 source
 
 Solid renderer
-├─ WsWire: 自动重连
-├─ RemoteSession: key → RemoteSignal 注册表
+├─ ServiceWire: 可替换 WsWire，URL 来自 supervisor 状态事件
+├─ RemoteSession: key → RemoteSignal 注册表；换线后注册表保留
 └─ 视图只读 signal；本地写入先行，服务端 patch 回滚/确认
 ```
 
@@ -170,9 +216,12 @@ Node 下 `solid-js` 会解析到 server 构建，`createComputed` 只跑一次�
 ### 8.3 生命周期
 
 - 开发/生产启动：Tauri `setup` 中 `start_service`；`VELA_NODE` 可覆盖解释器路径。
+- Node 运行时：构建前 `scripts/prepare-node-runtime.mjs` 把当前平台的 Node 二进制暂存到 `src-tauri/runtime/` 并随 bundle 打包；运行期优先用 bundle 内运行时，缺失时才回退系统 `node`。
+- 端口：supervisor 以 `VELA_SERVICE_PORT=0` 启动服务，Node 绑定随机空闲端口并在 `READY` 行报告实际 URL；前端通过 `service://status` 事件切换 WS 地址，`RemoteSession` 注册表跨重连保留。
 - 正常退出：`RunEvent::Exit` 调用 `stop_service`，kill + wait。
 - 异常退出：Rust 为子进程保留 stdin 管道；Node 监听 `stdin` 的 `end` / `close`，父进程消失即自行 shutdown，避免孤儿进程占用端口。
-- 固定端口 `4317` 便于开发；多实例/随机端口后续再做。
+- 崩溃恢复：watchdog 每 2s 检查子进程；进程退出、10s 内未 READY、或 READY 后 TCP 健康检查失败，都会重启服务。
+- 日志：stdout/stderr 进入 200 行环形缓冲，同时以 `service://log` 事件推送；Service 应用内可查看。
 
 ### 8.4 协议
 
@@ -191,14 +240,14 @@ Node 下 `solid-js` 会解析到 server 构建，`createComputed` 只跑一次�
 
 - 服务只监听 `127.0.0.1`，不暴露到局域网；
 - 校验 `Origin`：允许 `localhost` / `127.0.0.1` / Tauri 的 `tauri://localhost` 与 `http://tauri.localhost`；
-- `@vela/desktop` 不直接 import Tauri，服务状态通过 WS 自身表达；Rust 命令留给需要系统能力的场景。
+- `@vela/desktop` 不直接 import Tauri；`apps/desktop` 在入口层把 `service_status` / `service_health` / 日志事件注入 `@vela/desktop` 的稳定信号，浏览器预览可独立运行。
 
 ### 8.6 已知限制
 
-- 生产分发依赖系统 `node`；正式发布需把 Node 运行时作为 sidecar（`bundle.externalBin`）或 SEA 单文件打进应用；
-- 端口固定，多个实例会冲突；
-- 没有服务健康检查与崩溃重启策略（当前只做随应用启停）；
-- Node 服务的日志通过 `service://log` 事件发出，尚未在 UI 展示。
+- Node 运行时按当前构建平台暂存；跨平台构建需在目标平台执行打包脚本（尚未接 CI 三平台构建）；
+- 健康检查是 TCP 可达性 + 子进程存活，不是业务级探针；
+- 崩溃重启为固定 2s 轮询，未做指数退避；
+- 日志面板与 supervisor 日志共用环形缓冲，尚无级别过滤或导出。
 
 ## 9. 风险
 
@@ -206,6 +255,6 @@ Node 下 `solid-js` 会解析到 server 构建，`createComputed` 只跑一次�
 |---|---|---|
 | Solid 生态较小 | 组件库、招聘不如 React | 组件库自研但接口保持通用；必要时可替换 UI 层 |
 | 深相等开销 | 大对象状态频繁写 | 不可变更新 + 局部 signal + 自定义 equals |
-| 多实例窗口缺失 | 同一应用只能开一个窗 | P2 在 WindowRecord 上增加 appId |
+| 跨平台 Node 运行时 | 暂存脚本只复制当前平台二进制 | P5 CI 在各自 runner 上打包 |
 | VFS 不持久 | 刷新丢失 | P3 接 IndexedDB / OPFS |
 | Tauri 壳层 Rust | 团队需装 Rust 工具链 | 业务代码零 Rust；不接受则换 Electron |

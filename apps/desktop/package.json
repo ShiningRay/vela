@@ -5,14 +5,15 @@
   "type": "module",
   "description": "Vela Desktop — Solid shell running inside a Tauri 2 window.",
   "scripts": {
-    "dev": "pnpm --filter @vela/service-demo build && vite",
-    "build": "pnpm --filter @vela/service-demo build && vite build",
+    "dev": "node ../../scripts/prepare-node-runtime.mjs && pnpm --filter @vela/service-demo build && vite",
+    "build": "node ../../scripts/prepare-node-runtime.mjs && pnpm --filter @vela/service-demo build && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json",
     "tauri": "tauri"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.4",
+    "@tauri-apps/plugin-notification": "^2.8.0",
     "@vela/core": "workspace:*",
     "@vela/desktop": "workspace:*",
     "@vela/theme": "workspace:*",

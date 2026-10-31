@@ -5,6 +5,6 @@ export default defineConfig({
   plugins: [solid()],
   test: {
     environment: "node",
-    include: ["packages/**/test/**/*.test.{ts,tsx}"],
+    include: ["packages/**/test/**/*.test.{ts,tsx}", "services/**/test/**/*.test.{ts,tsx}"],
   },
 });
