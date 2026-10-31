@@ -1,5 +1,7 @@
 # Vela
 
+[![GitHub](https://img.shields.io/badge/GitHub-ShiningRay%2Fvela-181717?logo=github)](https://github.com/ShiningRay/vela)
+
 **Vela Desktop** — 用 Solid + TypeScript 重做的桌面平台，架构经验来自 Citrine，运行时不依赖 Ruby。
 
 > Vela 是船帆座。名字取“帆”的意象：一组能力托住同一个桌面，而不是再造一个框架。
