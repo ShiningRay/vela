@@ -35,17 +35,20 @@ Vela 不再自研响应式内核。它直接使用 Solid 的 `createSignal` / `c
 vela/
   packages/
     core/      @vela/core     窗口管理、应用注册、命令、VFS、通知、快捷键、深相等信号
+    remote/    @vela/remote   权威 Hub / 镜像 Session / Wire 传输（propose·patch·release·barrier）
     theme/     @vela/theme    设计令牌与 CSS 变量
     ui/        @vela/ui       基础组件 + 窗口框 / 任务栏 / 菜单栏 / 桌面图标
-    desktop/   @vela/desktop  桌面 shell、启动器、内置应用（About / Files / Settings）
+    desktop/   @vela/desktop  桌面 shell、启动器、内置应用（About / Files / Service / Settings）
   apps/
     demo/      @vela/app-demo     最小 Solid + @vela/core 示例
     desktop/   @vela/app-desktop  Tauri 主应用
+  services/
+    demo/      @vela/service-demo  Node/TS 后台服务，WebSocket 发布信号
   docs/
   assets/
 ```
 
-依赖方向单向：`core ← theme / ui ← desktop ← apps`。
+依赖方向单向：`core ← theme / ui ← desktop ← apps`；`remote` 被桌面与 Node 服务共同使用。
 
 ## 快速开始
 
@@ -57,7 +60,10 @@ pnpm install
 # 最小示例（浏览器）
 pnpm dev
 
-# 桌面开发（Vite + Tauri 窗口，HMR 生效）
+# 单独运行后台服务（浏览器调试时手动起；Tauri 会自动起）
+pnpm dev:service
+
+# 桌面开发（Vite + Tauri 窗口，HMR 生效；自动启动后台服务）
 pnpm dev:desktop
 
 # 检查
@@ -69,30 +75,34 @@ pnpm build
 pnpm build:desktop
 ```
 
-`pnpm dev` 打开 `http://localhost:5173` 的 Counter 示例。`pnpm dev:desktop` 会先启动 Vite，再由 Tauri 打开原生窗口。
+`pnpm dev` 打开 `http://localhost:5173` 的 Counter 示例。`pnpm dev:desktop` 会先启动 Vite，再由 Tauri 打开原生窗口；Rust 侧会启动 `services/demo` 的 Node 服务（`ws://127.0.0.1:4317`），退出时停止它。浏览器调试时用 `pnpm dev:service` 手动起服务。
 
 ## 当前状态
 
 骨架阶段（P0）：
 
 - `@vela/core`：窗口管理器、应用注册表、命令、VFS、通知、快捷键、深相等信号，带 Vitest 单测；
+- `@vela/remote`：权威 `RemoteHub`、镜像 `RemoteSession`、`WsWire` / `MemoryWire`，支持 `propose` / `patch` / `release` / `barrier`；权威侧用平台无关的 `createSource`，不依赖 Solid；
 - `@vela/ui`：Button / IconButton / Stack / Row / Label / MenuList / WindowFrame / Taskbar / MenuBar / DesktopIcon；
-- `@vela/desktop`：DesktopShell + About / Files / Settings 三个内置应用；
+- `@vela/desktop`：DesktopShell + About / Files / Service / Settings 四个内置应用；
 - `@vela/app-demo`：Counter 与深相等行为演示；
-- `@vela/app-desktop`：Tauri 2 壳与图标。
+- `@vela/app-desktop`：Tauri 2 壳、Node 服务 supervisor、图标；
+- `@vela/service-demo`：Node/TS WebSocket 服务，发布 `tasks:list` / `service:status` / `clock` 三个信号。
 
 已在 macOS 本机验证：
 
-- `pnpm typecheck`、`pnpm test`（15 项）、`pnpm build` 全绿；
+- `pnpm typecheck`、`pnpm test`（25 项）、`pnpm build` 全绿；
 - `pnpm dev`：Counter 渲染，点击 +1 后 `count=1 / double=2 / effect runs=2`，写入结构相等对象后 effect 次数保持 2；
 - `pnpm dev:desktop`：桌面图标单击选中、双击开窗，窗口拖拽、最大化、最小化、任务栏恢复、关闭与启动器均正常；
-- `pnpm build:desktop`：产出 `Vela.app`（9.6 MB）与 `Vela_0.1.0_aarch64.dmg`（2.7 MB），`open` 后可启动。
+- Service 应用：显示 `Connected to service`、连接数、uptime、PID、时钟与任务列表；在输入框添加任务后，前端乐观写入并通过 `propose → patch` 从服务端回流；
+- `pnpm build:desktop`：产出 `Vela.app`（9.82 MB）与 `Vela_0.1.0_aarch64.dmg`（2.77 MB）；App 启动时自动拉起 Node 服务（`127.0.0.1:4317`）；
+- 强制 `SIGKILL` 桌面主进程后，Node 服务因 stdin 管道关闭自动退出，端口释放（父进程守护）。
 
 已知限制：
 
+- 生产分发仍依赖系统 `node`；正式发布需把 Node 运行时作为 sidecar / SEA 单文件打包（当前用 `VELA_NODE` 指定解释器）；
 - 所有应用窗口按 app id 单例，多实例窗口未实现；
 - VFS 是内存实现，刷新后丢失；
-- 任务栏时钟为渲染时快照，尚未做分钟级刷新；
 - 组件库只覆盖桌面骨架所需的少量组件；
 - Tauri 打包未做签名/公证。
 
@@ -107,9 +117,11 @@ pnpm build:desktop
 | 产品名 | Vela Desktop |
 | 桌面应用 ID | `com.vela.desktop` |
 | 核心包 | `@vela/core` |
+| 远程信号 | `@vela/remote` |
 | 组件库 | `@vela/ui` |
 | 桌面层 | `@vela/desktop` |
 | 主题 | `@vela/theme` |
+| 后台服务 | `@vela/service-<name>` |
 | 应用 | `@vela/app-<name>` |
 
 包名 kebab-case；组件 PascalCase；属性与事件 camelCase。

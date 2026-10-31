@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Platform primitives for Vela: window manager, app registry, VFS, commands, notifications.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./signals": "./src/signals.ts"
   },
   "types": "./src/index.ts",
   "scripts": {

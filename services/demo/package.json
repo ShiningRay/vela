@@ -1,0 +1,23 @@
+{
+  "name": "@vela/service-demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo Node/TS service that publishes signals over WebSocket.",
+  "scripts": {
+    "build": "esbuild src/server.ts --bundle --platform=node --format=cjs --outfile=dist/server.cjs --external:bufferutil --external:utf-8-validate",
+    "dev": "tsx src/server.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@vela/remote": "workspace:*",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/ws": "^8.18.0",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.20.0",
+    "typescript": "^7.0.2"
+  }
+}

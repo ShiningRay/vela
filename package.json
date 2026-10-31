@@ -10,8 +10,10 @@
   },
   "scripts": {
     "dev": "pnpm --filter @vela/app-demo dev",
+    "dev:service": "pnpm --filter @vela/service-demo dev",
     "dev:desktop": "pnpm --filter @vela/app-desktop tauri dev",
     "build": "pnpm -r --if-present build",
+    "build:service": "pnpm --filter @vela/service-demo build",
     "build:desktop": "pnpm --filter @vela/app-desktop tauri build",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run",

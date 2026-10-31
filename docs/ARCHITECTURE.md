@@ -135,7 +135,72 @@ DesktopShell
 - 没有 Opal 的跨平台数值差异：不需要 `Num`；
 - 没有 `Citrine.dev_mode` 的布局提醒：Vite/浏览器 DevTools 足够。
 
-## 8. 风险
+## 8. 后台服务与远程信号
+
+### 8.1 拓扑
+
+```
+Tauri main (Rust)
+├─ ServiceState: child + status
+├─ setup(): spawn node services/demo/dist/server.cjs
+├─ commands: service_status / start / stop / restart
+└─ Exit: kill child；stdin 管道关闭兜底
+
+Node service (127.0.0.1:4317)
+├─ createSource(...) 权威状态
+├─ RemoteHub: snapshot + patch / release / barrier
+└─ propose 处理：校验收到的值，写回权威 source
+
+Solid renderer
+├─ WsWire: 自动重连
+├─ RemoteSession: key → RemoteSignal 注册表
+└─ 视图只读 signal；本地写入先行，服务端 patch 回滚/确认
+```
+
+### 8.2 为什么服务端不用 Solid
+
+Node 下 `solid-js` 会解析到 server 构建，`createComputed` 只跑一次、不追踪依赖；权威侧若照搬 Solid effect，更新不会广播。Vela 的做法：
+
+- `@vela/remote/hub` 提供平台无关的 `createSource`（`get` / `set` / `subscribe`），不依赖 Solid；
+- `RemoteHub` 只订阅 source，首跑发快照，之后每次变更发 patch；
+- `RemoteSession` 才是 Solid 侧，负责把 patch 写进 `createSignal`。
+
+这样服务端可在 Node、Bun、Deno 或任何 JS 运行时直接跑，不引入 DOM 依赖。
+
+### 8.3 生命周期
+
+- 开发/生产启动：Tauri `setup` 中 `start_service`；`VELA_NODE` 可覆盖解释器路径。
+- 正常退出：`RunEvent::Exit` 调用 `stop_service`，kill + wait。
+- 异常退出：Rust 为子进程保留 stdin 管道；Node 监听 `stdin` 的 `end` / `close`，父进程消失即自行 shutdown，避免孤儿进程占用端口。
+- 固定端口 `4317` 便于开发；多实例/随机端口后续再做。
+
+### 8.4 协议
+
+```json
+{"kind":"patch","key":"tasks:list","value":[...],"batch_id":"frame-1"}
+{"kind":"barrier","batch_id":"frame-1"}
+{"kind":"propose","key":"tasks:list","value":[...]}
+{"kind":"release","key":"tasks:list"}
+```
+
+- `patch` / `release` 带 `batch_id` 时，客户端先暂存；收到 `barrier` 后在一个 Solid `batch` 中提交，避免跨 key 半帧。
+- 客户端 `RemoteSignal.set` 先本地生效，再发 `propose`；服务端确认后广播 `patch`，深相等短路让重复值不再渲染。
+- `release` 先把信号置 `undefined` 通知视图清理，再驱逐注册表；后续同 key 的 patch 会以新信号重建。
+
+### 8.5 安全与边界
+
+- 服务只监听 `127.0.0.1`，不暴露到局域网；
+- 校验 `Origin`：允许 `localhost` / `127.0.0.1` / Tauri 的 `tauri://localhost` 与 `http://tauri.localhost`；
+- `@vela/desktop` 不直接 import Tauri，服务状态通过 WS 自身表达；Rust 命令留给需要系统能力的场景。
+
+### 8.6 已知限制
+
+- 生产分发依赖系统 `node`；正式发布需把 Node 运行时作为 sidecar（`bundle.externalBin`）或 SEA 单文件打进应用；
+- 端口固定，多个实例会冲突；
+- 没有服务健康检查与崩溃重启策略（当前只做随应用启停）；
+- Node 服务的日志通过 `service://log` 事件发出，尚未在 UI 展示。
+
+## 9. 风险
 
 | 风险 | 说明 | 对策 |
 |---|---|---|

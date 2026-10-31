@@ -6,4 +6,5 @@ export type { DesktopServices } from "./context";
 
 export { AboutApp } from "./apps/about";
 export { FilesApp } from "./apps/files";
+export { ServiceApp } from "./apps/service";
 export { SettingsApp } from "./apps/settings";

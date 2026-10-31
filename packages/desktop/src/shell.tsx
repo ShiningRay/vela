@@ -11,6 +11,7 @@ import type { AppDefinition } from "@vela/core";
 import { DesktopIcon, Label, MenuBar, Taskbar, WindowFrame } from "@vela/ui";
 import { AboutApp } from "./apps/about";
 import { FilesApp } from "./apps/files";
+import { ServiceApp } from "./apps/service";
 import { SettingsApp } from "./apps/settings";
 import { DesktopContext } from "./context";
 import type { DesktopServices } from "./context";
@@ -18,6 +19,7 @@ import type { DesktopServices } from "./context";
 const builtinApps: AppDefinition[] = [
   { id: "about", title: "About Vela", icon: "◆", component: AboutApp, singleton: true },
   { id: "files", title: "Files", icon: "▤", component: FilesApp, singleton: true },
+  { id: "service", title: "Service", icon: "◇", component: ServiceApp, singleton: true },
   { id: "settings", title: "Settings", icon: "⚙", component: SettingsApp, singleton: true },
 ];
 

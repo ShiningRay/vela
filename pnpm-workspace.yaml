@@ -1,5 +1,8 @@
 packages:
   - packages/*
   - apps/*
+  - services/*
+allowBuilds:
+  esbuild: true
 minimumReleaseAgeExclude:
   - vite-plugin-solid@2.11.15

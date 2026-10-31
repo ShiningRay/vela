@@ -6,14 +6,17 @@
 
 - [x] pnpm workspace、TypeScript strict、Vite、Vitest
 - [x] `@vela/core`：窗口管理器 / 应用注册表 / 命令 / VFS / 通知 / 快捷键 / 深相等信号
+- [x] `@vela/remote`：Hub / Session / WsWire / MemoryWire / propose·patch·release·barrier
 - [x] `@vela/theme`：设计令牌与 CSS 变量
 - [x] `@vela/ui`：Button、IconButton、Stack、Row、Label、MenuList、WindowFrame、Taskbar、MenuBar、DesktopIcon
-- [x] `@vela/desktop`：DesktopShell、About / Files / Settings
+- [x] `@vela/desktop`：DesktopShell、About / Files / Service / Settings
 - [x] `apps/demo`：Counter + 深相等演示
-- [x] `apps/desktop`：Tauri 2 壳
+- [x] `apps/desktop`：Tauri 2 壳、Node 服务 supervisor
+- [x] `services/demo`：Node/TS WebSocket 服务，发布 tasks/status/clock
 - [x] 首次 `pnpm install`、`pnpm typecheck`、`pnpm test`、`pnpm build` 全绿
 - [x] 图标生成（`pnpm tauri icon assets/icon.svg`）
 - [x] 首次 `tauri build` 产出可运行包（Vela.app / DMG，macOS 启动验证通过）
+- [x] 桌面启动自动拉起 Node 服务；SIGKILL 主进程后服务随 stdin 关闭退出
 
 验收：
 
@@ -34,6 +37,8 @@
 - [ ] 窗口焦点丢失/恢复（`blur`）
 - [ ] 任务栏时钟分钟级刷新
 - [ ] 快捷键中心（⌘ Space、⌘ W、⌘ M、⌘ Q）
+- [ ] Node 运行时随应用打包（sidecar 或 SEA），不依赖系统 node
+- [ ] 服务健康检查、崩溃重启、随机端口、日志面板
 
 验收：
 
