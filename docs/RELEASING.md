@@ -7,7 +7,7 @@ Vela 使用 Changesets 管理私有包版本与 CHANGELOG：
 ```bash
 pnpm changeset       # 为本次改动选择 bump 级别
 pnpm version         # 更新版本、CHANGELOG，并同步 Tauri/Cargo 版本
-pnpm release         # 生成包 tag
+pnpm release         # 生成 v<version> tag
 ```
 
 桌面版本以 `apps/desktop/package.json` 为准，`scripts/sync-version.mjs` 会同步到：

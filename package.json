@@ -24,7 +24,7 @@
     "e2e:install": "playwright install chromium",
     "changeset": "changeset",
     "version": "changeset version && node scripts/sync-version.mjs",
-    "release": "changeset tag",
+    "release": "node scripts/tag-release.mjs",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
