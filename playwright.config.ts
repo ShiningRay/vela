@@ -1,5 +1,3 @@
-import { tmpdir } from "node:os";
-import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 
 // Escape hatch for machines with a Chromium already installed but without
@@ -40,16 +38,6 @@ export default defineConfig({
       url: "http://localhost:5174",
       reuseExistingServer: true,
       timeout: 120_000,
-    },
-    {
-      command: "pnpm --filter @vela/marketplace dev",
-      url: "http://127.0.0.1:4320/api/health",
-      reuseExistingServer: false,
-      timeout: 60_000,
-      env: {
-        MARKETPLACE_ADMIN_TOKEN: "test-admin-token",
-        MARKETPLACE_DATA_DIR: path.join(tmpdir(), `vela-marketplace-e2e-${process.pid}`),
-      },
     },
   ],
 });

@@ -6,6 +6,7 @@ import {
   Input,
   Label,
   Row,
+  Select,
   Spinner,
   Stack,
   Tag,
@@ -13,19 +14,47 @@ import {
 import { useDesktop } from "../context";
 import { installPackage, listInstalledPackages, parseVpk, registerPackageApp } from "../packages";
 
+type MarketCategory = "productivity" | "developer" | "finance" | "fun" | "system" | "other";
+type MarketSort = "recent" | "downloads" | "rating";
+
 interface MarketPlugin {
   id: string;
   name: string;
   description: string;
   author: string;
+  publisherName: string;
   homepage: string;
   icon: string;
+  category: MarketCategory;
+  featured: boolean;
   tags: string[];
   latestVersion: string;
   size: number;
   downloads: number;
+  rating: number;
+  ratingCount: number;
   updatedAt: string;
 }
+
+const CATEGORY_LABELS: Record<MarketCategory, string> = {
+  productivity: "Productivity",
+  developer: "Developer",
+  finance: "Finance",
+  fun: "Fun",
+  system: "System",
+  other: "Other",
+};
+
+const CATEGORY_OPTIONS = [
+  { value: "", label: "All categories" },
+  ...Object.entries(CATEGORY_LABELS).map(([value, label]) => ({ value, label })),
+];
+
+const SORT_OPTIONS: Array<{ value: MarketSort; label: string }> = [
+  { value: "recent", label: "Newest" },
+  { value: "downloads", label: "Most downloaded" },
+  { value: "rating", label: "Top rated" },
+];
 
 interface PluginListResponse {
   items: MarketPlugin[];
@@ -47,6 +76,8 @@ function baseUrl(value: string): string {
 export function MarketplaceApp() {
   const { apps, notifications, settings, vfs } = useDesktop();
   const [query, setQuery] = createSignal("");
+  const [category, setCategory] = createSignal("");
+  const [sort, setSort] = createSignal<MarketSort>("recent");
   const [plugins, setPlugins] = createSignal<MarketPlugin[]>([]);
   const [loading, setLoading] = createSignal(false);
   const [error, setError] = createSignal("");
@@ -74,8 +105,9 @@ export function MarketplaceApp() {
     setLoading(true);
     setError("");
     try {
-      const params = new URLSearchParams({ pageSize: "60" });
+      const params = new URLSearchParams({ pageSize: "60", sort: sort() });
       if (search.trim()) params.set("q", search.trim());
+      if (category()) params.set("category", category());
       const response = await fetch(`${url}/api/plugins?${params}`);
       if (!response.ok) throw new Error(`Marketplace returned ${response.status}`);
       const data = (await response.json()) as PluginListResponse;
@@ -153,6 +185,27 @@ export function MarketplaceApp() {
         <Button type="submit">Search</Button>
       </form>
 
+      <Row gap={8} class="vela-market__filters">
+        <Select
+          label="Category"
+          value={category()}
+          options={CATEGORY_OPTIONS}
+          onChange={(value) => {
+            setCategory(value);
+            void load();
+          }}
+        />
+        <Select
+          label="Sort"
+          value={sort()}
+          options={SORT_OPTIONS}
+          onChange={(value) => {
+            setSort(value as MarketSort);
+            void load();
+          }}
+        />
+      </Row>
+
       <Show when={error()}>
         <Alert tone="danger" title="Marketplace error">
           {error()}
@@ -184,14 +237,18 @@ export function MarketplaceApp() {
                 </span>
                 <div class="vela-market__title">
                   <strong>{plugin.name}</strong>
-                  <Label muted>{`${plugin.author || "Unknown author"} · v${plugin.latestVersion}`}</Label>
+                  <Label muted>
+                    {`${plugin.publisherName || plugin.author || "Unknown publisher"} · ${CATEGORY_LABELS[plugin.category] ?? plugin.category} · v${plugin.latestVersion}`}
+                  </Label>
                 </div>
               </div>
               <p class="vela-market__description">{plugin.description || "No description"}</p>
               <div class="vela-market__tags">
+                {plugin.featured ? <Tag tone="warning">Featured</Tag> : null}
                 <For each={plugin.tags.slice(0, 5)}>{(tag) => <Tag tone="accent">{tag}</Tag>}</For>
               </div>
               <div class="vela-market__meta">
+                <span>{plugin.ratingCount ? `★ ${plugin.rating.toFixed(1)} (${plugin.ratingCount})` : "No ratings"}</span>
                 <span>{plugin.downloads} downloads</span>
                 <span>{formatBytes(plugin.size)}</span>
               </div>

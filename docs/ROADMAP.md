@@ -1,6 +1,6 @@
 # Roadmap
 
-> 状态：P0 骨架、P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P4 VPK 应用分发、P6 插件市场已落地（VPK 应用外置在 ShiningRay/vela-apps）；P5 工程化未完成；ZUI 不做；工期为单人估算，按实际速度调整。
+> 状态：P0 骨架、P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P4 VPK 应用分发、P6 插件市场已落地（VPK 应用外置在 ShiningRay/vela-apps，市场服务外置在 vela-marketplace）；P5 工程化未完成；ZUI 不做；工期为单人估算，按实际速度调整。
 
 ## P0 — 骨架（完成）
 
@@ -129,12 +129,16 @@
 
 ## P6 — 插件市场（完成）
 
-- [x] `services/marketplace`：独立 Express 服务，JSON 元数据 + 文件存储，上传/搜索/下载 API 与 Web 管理页；
-- [x] 上传校验：ZIP、manifest、semver、入口、5 MB/6 MB 限制、保留内置 id；
-- [x] 上传鉴权：`MARKETPLACE_ADMIN_TOKEN` Bearer token；GET/OPTIONS CORS 开放；
-- [x] Vela 内置 Plugin Market：搜索、安装、重装、已安装版本提示；Settings 可配置 Marketplace URL；
-- [x] e2e：上传 VPK → 搜索 → 安装 → 启动包；
-- 限制：单管理员 MVP，无用户体系、签名校验、审核流、对象存储与生产部署。
+- [x] `vela-marketplace` 独立仓：Express 服务、JSON/文件存储、上传/搜索/下载 API 与 Web 管理页；
+- [x] 发布者账号：注册/登录、scrypt 密码哈希、7 天会话、publisher/admin 角色；
+- [x] 审核上架：pending/published/rejected/suspended，管理员批准/拒绝/暂停；
+- [x] 分类与精选：productivity/developer/finance/fun/system/other，管理员可设 featured；
+- [x] 评分评论：登录用户 1-5 星与文本，去重更新，插件列表返回平均分；
+- [x] 上传校验：ZIP、manifest、semver、入口、5 MB/6 MB 限制、保留内置 id、ZIP bomb 防护；
+- [x] Vela 内置 Plugin Market：搜索、分类/排序、评分展示、安装/重装；Settings 可配置 Marketplace URL；
+- [x] 部署准备：独立仓 Dockerfile、`/data` 卷、healthcheck、CI/Release workflow；
+- [x] 独立仓 API 测试；Vela 内置客户端单测覆盖列表、筛选与安装；
+- 限制：单实例 JSON 存储，无邮箱验证/找回密码/对象存储/病毒扫描/签名校验；未实际部署公网。
 
 ## 不做
 

@@ -12,8 +12,6 @@
     "dev": "pnpm --filter @vela/app-demo dev",
     "dev:components": "pnpm --filter @vela/app-components dev",
     "dev:service": "pnpm --filter @vela/service-demo dev",
-    "dev:market": "pnpm --filter @vela/marketplace dev",
-    "seed:market": "pnpm --filter @vela/marketplace seed",
     "dev:desktop": "pnpm --filter @vela/app-desktop tauri dev",
     "build": "pnpm -r --if-present build",
     "build:service": "pnpm --filter @vela/service-demo build",

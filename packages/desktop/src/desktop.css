@@ -260,3 +260,11 @@
 .vela-market__actions {
   justify-content: flex-end;
 }
+
+.vela-market__filters {
+  align-items: flex-end;
+}
+
+.vela-market__filters .vela-field {
+  min-width: 150px;
+}

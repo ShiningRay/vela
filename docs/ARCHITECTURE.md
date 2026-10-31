@@ -132,12 +132,14 @@ P4 的 Calculator、Citrine Sheets、Market Terminal 已移到独立仓 [Shining
 
 ### 3.8 插件市场
 
-`services/marketplace` 是独立的 Express 服务，不与桌面进程耦合：
+插件市场服务独立在 `vela-marketplace` 仓，以 HTTP 与桌面解耦：
 
-- `GET /api/plugins` 搜索/分页，`GET /api/plugins/:id/download` 下载最新 VPK；
-- `POST /api/plugins` 接收 multipart `.vpk`，校验 ZIP、manifest、semver、入口与 5 MB/6 MB 限制，计算 SHA-256；需要 `MARKETPLACE_ADMIN_TOKEN`；
-- 元数据原子写入 `data/plugins.json`，文件存 `data/files/<id>/<version>.vpk`；
-- `/` 提供上传与浏览的 Web 管理页，GET/OPTIONS 开放 CORS，上传只允许 Bearer token。
+- `GET /api/plugins` 搜索/分类/精选/排序/分页，`GET /api/plugins/:id/download` 下载已上架 VPK；
+- `POST /api/auth/register|login` 发布者账号，scrypt 密码哈希与 7 天会话；`publisher` 上传进入 `pending`，`admin` 可审核；
+- `POST /api/plugins` 接收 multipart `.vpk`，校验 ZIP、manifest、semver、入口与 5 MB/6 MB 限制，计算 SHA-256；
+- 管理员 API 支持批准/拒绝/暂停、分类与精选；登录用户可评分评论；
+- 元数据/账号原子写入 JSON，文件按 `<id>/<version>.vpk` 存储；
+- 自带发布者/管理员 Web 管理页、Dockerfile 与 `/data` 持久卷。
 
 Vela 内置的 Plugin Market 读取 `DesktopSettings.marketplaceUrl`（默认 `http://127.0.0.1:4320`），列出插件后把下载的 VPK 交给现有 `parseVpk → installPackage → registerPackageApp` 流程，安装后立即出现在桌面。
 
@@ -150,7 +152,6 @@ Vela 内置的 Plugin Market 读取 `DesktopSettings.marketplaceUrl`（默认 `h
 | `@vela/ui` | `core`（仅类型）、`theme`、`solid-js` | `desktop` |
 | `@vela/desktop` | `core`、`ui`、`theme`、`solid-js` | Tauri API |
 | `apps/desktop` | 以上 + `@tauri-apps/api` | 框架内部实现 |
-| `services/marketplace` | `express`、`multer`、`fflate`、`semver` | 桌面包、DOM |
 
 `@vela/desktop` 不直接 import Tauri，保证它能在普通浏览器里运行；需要本地文件、通知、系统集成时，由 app 层注入适配器。
 

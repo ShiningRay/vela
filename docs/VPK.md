@@ -75,7 +75,7 @@ Install the published `.vpk` files from Settings → App packages → Install `.
 - `citrine-sheets.vpk`: the Citrine Sheets Ruby/Opal demo;
 - `citrine-market-terminal.vpk`: the Citrine market-terminal demo.
 
-Vela 的内置 Plugin Market 会从 `services/marketplace` 搜索并下载 `.vpk`，然后复用同一套安装校验；平台地址在 Settings → Marketplace URL 配置。
+Vela 的内置 Plugin Market 会从独立部署的 `vela-marketplace` 服务搜索并下载 `.vpk`，然后复用同一套安装校验；平台地址在 Settings → Marketplace URL 配置。
 
 ## Install flow
 
