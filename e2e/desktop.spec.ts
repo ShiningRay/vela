@@ -1,10 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 
-async function pressLauncherHotkey(page: Page): Promise<void> {
+async function pressDesktopShortcut(page: Page, key: string): Promise<void> {
   const modifier = await page.evaluate(() =>
     /Mac|iPhone|iPad/.test(navigator.platform) ? "Meta" : "Control",
   );
-  await page.keyboard.press(`${modifier}+Space`);
+  await page.keyboard.press(`${modifier}+${key}`);
+}
+
+async function pressLauncherHotkey(page: Page): Promise<void> {
+  await pressDesktopShortcut(page, "Space");
 }
 
 async function openFromLauncher(page: Page, query: string): Promise<void> {
@@ -204,12 +208,12 @@ test("hotkey center closes, minimizes and quits windows", async ({ page }) => {
   await openFromLauncher(page, "files");
   await expect(page.locator(".vela-window")).toHaveCount(2);
 
-  await page.keyboard.press("Meta+W");
+  await pressDesktopShortcut(page, "W");
   await expect(page.locator(".vela-window")).toHaveCount(1);
 
-  await page.keyboard.press("Meta+M");
+  await pressDesktopShortcut(page, "M");
   await expect(page.locator(".vela-window")).toHaveAttribute("data-minimized", "true");
 
-  await page.keyboard.press("Meta+Q");
+  await pressDesktopShortcut(page, "Q");
   await expect(page.locator(".vela-window")).toHaveCount(0);
 });

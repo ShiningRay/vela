@@ -45,6 +45,11 @@ export default defineConfig({
         },
       ],
     },
+    search: { provider: "local" },
+    editLink: {
+      pattern: "https://github.com/ShiningRay/vela/edit/main/docs/:path",
+      text: "在 GitHub 编辑此页",
+    },
     socialLinks: [{ icon: "github", link: "https://github.com/ShiningRay/vela" }],
     footer: {
       message: "Vela Desktop · MIT",
