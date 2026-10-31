@@ -1,7 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 
+async function pressLauncherHotkey(page: Page): Promise<void> {
+  const modifier = await page.evaluate(() =>
+    /Mac|iPhone|iPad/.test(navigator.platform) ? "Meta" : "Control",
+  );
+  await page.keyboard.press(`${modifier}+Space`);
+}
+
 async function openFromLauncher(page: Page, query: string): Promise<void> {
-  await page.keyboard.press("Meta+Space");
+  await pressLauncherHotkey(page);
   const search = page.getByRole("searchbox", { name: "Search applications" });
   await expect(search).toBeVisible();
   await expect(search).toBeFocused();
@@ -20,7 +27,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("launcher searches with the keyboard and opens multiple app instances", async ({ page }) => {
-  await page.keyboard.press("Meta+Space");
+  await pressLauncherHotkey(page);
   const search = page.getByRole("searchbox", { name: "Search applications" });
   await expect(search).toBeFocused();
   await search.fill("ser");
