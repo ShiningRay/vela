@@ -132,7 +132,7 @@ P4 的 Calculator、Citrine Sheets、Market Terminal 已移到独立仓 [Shining
 
 ### 3.8 插件市场
 
-插件市场服务独立在 `vela-marketplace` 仓，以 HTTP 与桌面解耦：
+插件市场服务独立在 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace) 仓，以 HTTP 与桌面解耦：
 
 - `GET /api/plugins` 搜索/分类/精选/排序/分页，`GET /api/plugins/:id/download` 下载已上架 VPK；
 - `POST /api/auth/register|login` 发布者账号，scrypt 密码哈希与 7 天会话；`publisher` 上传进入 `pending`，`admin` 可审核；

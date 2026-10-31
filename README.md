@@ -87,11 +87,11 @@ pnpm build:desktop
 
 三个 VPK demo 已独立到 [ShiningRay/vela-apps](https://github.com/ShiningRay/vela-apps)，构建产物在其 `dist/vpk/` 生成并通过 [v0.1.0 Release](https://github.com/ShiningRay/vela-apps/releases/tag/v0.1.0) 发布；Vela 只保留 `.vpk` 安装器。
 
-插件市场服务已独立到 `vela-marketplace` 仓，随独立仓部署；Vela 只保留内置 Plugin Market 客户端。客户端默认连接 `http://127.0.0.1:4320`，可在 Settings → Marketplace URL 改为部署后的市场地址。
+插件市场服务已独立到 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace) 仓，随独立仓部署；Vela 只保留内置 Plugin Market 客户端。客户端默认连接 `http://127.0.0.1:4320`，可在 Settings → Marketplace URL 改为部署后的市场地址。
 
 ## 当前状态
 
-P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插件市场完成；P4 的三个 VPK demo 独立到 [vela-apps](https://github.com/ShiningRay/vela-apps)，插件市场服务独立到 `vela-marketplace`，ZUI 不做：
+P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插件市场完成；P4 的三个 VPK demo 独立到 [vela-apps](https://github.com/ShiningRay/vela-apps)，插件市场服务独立到 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace)，ZUI 不做：
 
 - `@vela/core`：窗口管理器（多实例 `appId`、blur 恢复、吸附、最大化）、应用注册表、命令、VFS（`MemoryVfs` / `IndexedDbVfs`）、通知（自动消失 + 可选宿主桥）、快捷键（Space 归一化）、深相等信号，带 Vitest 单测；
 - `@vela/remote`：权威 `RemoteHub`、镜像 `RemoteSession`、`WsWire` / `MemoryWire`，支持 `propose` / `patch` / `release` / `barrier`；权威侧用平台无关的 `createSource`，不依赖 Solid；
