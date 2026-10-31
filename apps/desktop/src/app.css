@@ -1,0 +1,7 @@
+#root {
+  height: 100%;
+}
+
+.vela-desktop {
+  font-family: var(--vela-font-sans);
+}

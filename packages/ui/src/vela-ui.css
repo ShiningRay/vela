@@ -1,0 +1,441 @@
+.vela-button {
+  appearance: none;
+  border: 1px solid var(--vela-color-border);
+  background: var(--vela-color-surface-raised);
+  color: var(--vela-color-text);
+  border-radius: var(--vela-radius-md);
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.vela-button:hover {
+  border-color: var(--vela-color-accent);
+}
+
+.vela-button:active {
+  transform: translateY(1px);
+}
+
+.vela-button[data-variant="primary"] {
+  background: var(--vela-color-accent);
+  border-color: var(--vela-color-accent);
+  color: #082f49;
+  font-weight: 600;
+}
+
+.vela-button[data-variant="ghost"] {
+  background: transparent;
+  border-color: transparent;
+}
+
+.vela-button[data-variant="danger"] {
+  background: var(--vela-color-danger);
+  border-color: var(--vela-color-danger);
+  color: #450a0a;
+}
+
+.vela-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.vela-icon-button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--vela-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.vela-icon-button:hover {
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.vela-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.vela-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.vela-label {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.vela-label.is-muted {
+  color: var(--vela-color-muted);
+}
+
+.vela-menu-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: 6px;
+  background: var(--vela-color-surface-raised);
+  border: 1px solid var(--vela-color-border);
+  border-radius: var(--vela-radius-md);
+  box-shadow: var(--vela-shadow-panel);
+}
+
+.vela-menu-item {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--vela-color-text);
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: var(--vela-radius-sm);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.vela-menu-item:hover {
+  background: rgba(125, 211, 252, 0.14);
+}
+
+/* ── Window ─────────────────────────────────────────────── */
+
+.vela-window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  min-height: 70px;
+  background: var(--vela-color-surface);
+  border: 1px solid var(--vela-color-border);
+  border-radius: var(--vela-radius-lg);
+  box-shadow: var(--vela-shadow-window);
+  overflow: hidden;
+  color: var(--vela-color-text);
+}
+
+.vela-window[data-active="true"] {
+  border-color: var(--vela-color-accent);
+  box-shadow: 0 28px 72px rgba(2, 6, 23, 0.65), 0 0 0 1px rgba(125, 211, 252, 0.28);
+}
+
+.vela-window[data-maximized="true"] {
+  border-radius: 0;
+}
+
+.vela-window__titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px 8px 14px;
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(23, 32, 51, 0.95));
+  border-bottom: 1px solid var(--vela-color-border);
+  cursor: grab;
+  user-select: none;
+}
+
+.vela-window__titlebar:active {
+  cursor: grabbing;
+}
+
+.vela-window__title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vela-window__controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.vela-window__control {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--vela-color-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--vela-radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.vela-window__control:hover {
+  background: rgba(148, 163, 184, 0.18);
+  color: var(--vela-color-text);
+}
+
+.vela-window__control.is-close:hover {
+  background: var(--vela-color-danger);
+  color: #450a0a;
+}
+
+.vela-window__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px;
+}
+
+.vela-window__resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 45%, var(--vela-color-border) 45%, var(--vela-color-border) 55%, transparent 55%);
+}
+
+/* ── Menu bar ───────────────────────────────────────────── */
+
+.vela-menubar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--vela-color-border);
+  z-index: 9000;
+  font-size: 12px;
+}
+
+.vela-menubar__brand {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--vela-color-accent);
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.vela-menubar__app {
+  color: var(--vela-color-text);
+  font-weight: 600;
+}
+
+.vela-menubar__status {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+.vela-menubar__badge {
+  padding: 2px 8px;
+  border: 1px solid var(--vela-color-border);
+  border-radius: var(--vela-radius-pill);
+  color: var(--vela-color-muted);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.vela-menubar__badge.is-muted {
+  opacity: 0.7;
+}
+
+/* ── Taskbar ────────────────────────────────────────────── */
+
+.vela-taskbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--vela-color-border);
+  z-index: 9000;
+}
+
+.vela-launcher {
+  appearance: none;
+  border: 1px solid var(--vela-color-border);
+  background: var(--vela-color-surface-raised);
+  color: var(--vela-color-text);
+  border-radius: var(--vela-radius-md);
+  height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vela-launcher__mark {
+  color: var(--vela-color-accent);
+}
+
+.vela-taskbar__windows {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.vela-taskbar__window {
+  appearance: none;
+  border: 1px solid transparent;
+  background: rgba(30, 41, 59, 0.7);
+  color: var(--vela-color-muted);
+  border-radius: var(--vela-radius-sm);
+  height: 30px;
+  max-width: 180px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vela-taskbar__window[data-active="true"] {
+  border-color: var(--vela-color-accent);
+  color: var(--vela-color-text);
+}
+
+.vela-taskbar__window[data-minimized="true"] {
+  opacity: 0.55;
+}
+
+.vela-taskbar__tray {
+  margin-left: auto;
+  color: var(--vela-color-muted);
+  font-size: 12px;
+}
+
+/* ── Desktop icons ──────────────────────────────────────── */
+
+.vela-desktop-icon {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--vela-color-text);
+  width: 88px;
+  padding: 10px 6px;
+  border-radius: var(--vela-radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.vela-desktop-icon:hover {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.vela-desktop-icon[data-selected="true"] {
+  background: rgba(125, 211, 252, 0.18);
+  border-color: rgba(125, 211, 252, 0.45);
+}
+
+.vela-desktop-icon__glyph {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.vela-desktop-icon__label {
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+/* ── Desktop shell ──────────────────────────────────────── */
+
+.vela-desktop {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--vela-wallpaper, var(--vela-color-bg));
+}
+
+.vela-desktop__icons {
+  position: absolute;
+  top: 46px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px;
+  max-height: calc(100vh - 110px);
+  z-index: 1;
+}
+
+.vela-desktop__layer {
+  position: absolute;
+  inset: 30px 0 48px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.vela-desktop__layer > * {
+  pointer-events: auto;
+}
+
+/* ── Notifications ──────────────────────────────────────── */
+
+.vela-notifications {
+  position: fixed;
+  right: 16px;
+  bottom: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 9500;
+}
+
+.vela-notification {
+  width: 280px;
+  padding: 12px 14px;
+  border: 1px solid var(--vela-color-border);
+  border-radius: var(--vela-radius-md);
+  background: var(--vela-color-surface-raised);
+  box-shadow: var(--vela-shadow-panel);
+}
+
+.vela-notification__title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.vela-notification__body {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--vela-color-muted);
+}

@@ -1,0 +1,95 @@
+.demo {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.demo__card {
+  width: min(560px, 100%);
+  padding: 32px;
+  border: 1px solid var(--vela-color-border);
+  border-radius: var(--vela-radius-lg);
+  background: linear-gradient(160deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.94));
+  box-shadow: var(--vela-shadow-window);
+}
+
+.demo__eyebrow {
+  margin: 0 0 8px;
+  color: var(--vela-color-accent);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.demo__title {
+  margin: 0 0 24px;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.demo__readout {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.demo__number {
+  font-size: 56px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--vela-color-accent);
+}
+
+.demo__label {
+  color: var(--vela-color-muted);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.demo__line {
+  margin: 0 0 20px;
+  color: var(--vela-color-muted);
+  font-size: 13px;
+}
+
+.demo__line strong {
+  color: var(--vela-color-text);
+}
+
+.demo__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.demo__button {
+  appearance: none;
+  border: 1px solid var(--vela-color-border);
+  background: var(--vela-color-surface-raised);
+  color: var(--vela-color-text);
+  border-radius: var(--vela-radius-md);
+  padding: 9px 14px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.demo__button:hover {
+  border-color: var(--vela-color-accent);
+}
+
+.demo__button.is-primary {
+  background: var(--vela-color-accent);
+  border-color: var(--vela-color-accent);
+  color: #082f49;
+  font-weight: 600;
+}
+
+.demo__hint {
+  margin: 20px 0 0;
+  color: var(--vela-color-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}

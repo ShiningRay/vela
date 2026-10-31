@@ -1,0 +1,23 @@
+{
+  "name": "@vela/app-demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal Solid + Vela core demo.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@vela/core": "workspace:*",
+    "@vela/theme": "workspace:*",
+    "solid-js": "^1.9.18"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vite-plugin-solid": "^2.11.15"
+  }
+}

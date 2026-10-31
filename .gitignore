@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+.vite/
+*.local
+.DS_Store
+
+# Tauri / Rust
+apps/*/src-tauri/target/
+apps/*/src-tauri/gen/

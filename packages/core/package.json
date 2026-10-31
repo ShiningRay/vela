@@ -1,0 +1,17 @@
+{
+  "name": "@vela/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Platform primitives for Vela: window manager, app registry, VFS, commands, notifications.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "solid-js": "^1.9.18"
+  }
+}

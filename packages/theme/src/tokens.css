@@ -1,0 +1,47 @@
+:root {
+  --vela-color-bg: #0f172a;
+  --vela-color-surface: #172033;
+  --vela-color-surface-raised: #1e293b;
+  --vela-color-text: #e2e8f0;
+  --vela-color-muted: #94a3b8;
+  --vela-color-accent: #7dd3fc;
+  --vela-color-accent-strong: #38bdf8;
+  --vela-color-border: #334155;
+  --vela-color-danger: #f87171;
+  --vela-color-success: #4ade80;
+  --vela-radius-sm: 6px;
+  --vela-radius-md: 10px;
+  --vela-radius-lg: 16px;
+  --vela-radius-pill: 999px;
+  --vela-space-1: 4px;
+  --vela-space-2: 8px;
+  --vela-space-3: 12px;
+  --vela-space-4: 16px;
+  --vela-space-5: 24px;
+  --vela-space-6: 32px;
+  --vela-font-sans: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --vela-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --vela-shadow-window: 0 24px 64px rgba(2, 6, 23, 0.55);
+  --vela-shadow-panel: 0 8px 24px rgba(2, 6, 23, 0.35);
+  --vela-wallpaper: radial-gradient(circle at 20% 20%, #1d4ed8 0%, transparent 45%),
+    radial-gradient(circle at 80% 10%, #0e7490 0%, transparent 40%),
+    linear-gradient(160deg, #0f172a 0%, #111827 60%, #020617 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--vela-color-bg);
+  color: var(--vela-color-text);
+  font-family: var(--vela-font-sans);
+  overflow: hidden;
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@vela/theme",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vela design tokens and theme application.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens.css": "./src/tokens.css"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}
