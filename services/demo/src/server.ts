@@ -1,5 +1,13 @@
+import { createServer as createHttpServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { randomUUID } from "node:crypto";
 import { WebSocketServer, type WebSocket } from "ws";
-import { createSource, RemoteHub } from "@vela/remote/hub";
+import { RemoteHub, createSource } from "@vela/remote/hub";
+import { SurfaceRegistry } from "@vela/core";
+import type { SurfaceRecord } from "@vela/core";
+import { AgentState, SURFACES_KEY, AGENT_DATA_KEY, AGENT_NOTIFICATIONS_KEY, createAgentMcpServer, normalizeOwner } from "@vela/agent-mcp";
+import type { AgentMcpServer } from "@vela/agent-mcp";
+import type { PackageToolDeclaration } from "@vela/agent-mcp";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { Wire, WireMessage } from "@vela/remote/protocol";
 
 interface Task {
@@ -33,6 +41,196 @@ const status = createSource<ServiceStatus>({
 });
 
 const clock = createSource(new Date().toISOString());
+
+// --- Agent appearance layer -------------------------------------------------
+
+const surfaces = new SurfaceRegistry();
+const agentState = new AgentState();
+const hubs = new Set<RemoteHub>();
+
+function watchAgentSources(hub: RemoteHub): void {
+  hub.watch(SURFACES_KEY, surfaces.source);
+  hub.watch(AGENT_DATA_KEY, agentState.agentData);
+  hub.watch(AGENT_NOTIFICATIONS_KEY, agentState.notifications);
+  for (const [key, source] of agentState.dataSources) hub.watch(key, source);
+}
+
+agentState.onNewSource((key) => {
+  const source = agentState.dataSources.get(key);
+  if (!source) return;
+  for (const hub of hubs) hub.watch(key, source);
+});
+
+/** One shared batch id fans out to every connected hub so all sessions commit atomically. */
+function batchAcrossHubs(fn: () => void, batchId?: string): void {
+  const id = batchId ?? `dashboard-${Date.now()}`;
+  for (const hub of hubs) hub.batch(fn, id);
+}
+
+const agentMcp = createAgentMcpServer({
+  state: agentState,
+  surfaces,
+  getOwner: () => "agent.local",
+  batch: batchAcrossHubs,
+});
+
+// --- MCP over Streamable HTTP ------------------------------------------------
+
+interface McpSession {
+  transport: StreamableHTTPServerTransport;
+  server: AgentMcpServer;
+}
+
+const mcpSessions = new Map<string, McpSession>();
+/** Package tool declarations every MCP session must carry. */
+const packageRegistry = new Map<string, Parameters<AgentMcpServer["registerPackageTools"]>[0]>();
+
+function registerPackagesInto(server: AgentMcpServer): void {
+  for (const registration of packageRegistry.values()) {
+    server.registerPackageTools(registration);
+  }
+}
+
+function readBody(request: IncomingMessage): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    request.on("data", (chunk: Buffer) => {
+      size += chunk.length;
+      if (size > 2_000_000) {
+        reject(new Error("request body too large"));
+        request.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    request.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    request.on("error", reject);
+  });
+}
+
+async function handleMcpRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  const sessionId = request.headers["mcp-session-id"];
+  if (typeof sessionId === "string" && mcpSessions.has(sessionId)) {
+    const session = mcpSessions.get(sessionId)!;
+    const body = request.method === "POST" ? JSON.parse(await readBody(request)) : undefined;
+    await session.transport.handleRequest(request, response, body);
+    return;
+  }
+
+  if (request.method === "POST") {
+    let body: unknown;
+    try {
+      body = JSON.parse(await readBody(request));
+    } catch {
+      response.writeHead(400).end("invalid JSON");
+      return;
+    }
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: () => randomUUID(),
+      onsessioninitialized: (id: string) => {
+        mcpSessions.set(id, { transport, server: session });
+      },
+      onsessionclosed: (id: string) => {
+        mcpSessions.delete(id);
+      },
+    });
+    const session = createAgentMcpServer({
+      state: agentState,
+      surfaces,
+      getOwner: () =>
+        normalizeOwner(
+          (session as unknown as { server?: { getClientVersion?: () => { name?: string } | undefined } }).server?.getClientVersion?.()?.name,
+        ),
+      batch: batchAcrossHubs,
+    });
+    await session.connect(transport);
+    registerPackagesInto(session);
+    await transport.handleRequest(request, response, body);
+    return;
+  }
+
+  response.writeHead(400).end("missing MCP session");
+}
+
+// --- Skill document ----------------------------------------------------------
+// Bundled in at build time (esbuild --loader:.md=text) so the service serves
+// exactly the skill document shipped with this build.
+
+import agentSkillDocument from "../../../packages/agent-mcp/AGENT_SKILL.md";
+
+function readSkillDocument(): string {
+  return agentSkillDocument;
+}
+
+// --- Package declarations (proposed by the desktop shell) --------------------
+
+const PACKAGE_ID_PATTERN = /^[a-z0-9][a-z0-9-]{1,31}$/;
+
+interface PackageProposal {
+  action: "register" | "unregister";
+  id: string;
+  tools?: PackageToolDeclaration[];
+  surfaces?: Array<{
+    id: string;
+    kind: "window" | "widget" | "panel";
+    title: string;
+    geometry: SurfaceRecord["geometry"];
+    content: SurfaceRecord["content"];
+    dataKey?: string;
+  }>;
+}
+
+function packageOwner(id: string): string {
+  return `pkg.${id}`;
+}
+
+function handlePackageProposal(value: unknown): void {
+  const proposal = value as PackageProposal;
+  if (!proposal || (proposal.action !== "register" && proposal.action !== "unregister")) return;
+  if (typeof proposal.id !== "string" || !PACKAGE_ID_PATTERN.test(proposal.id)) return;
+  const owner = packageOwner(proposal.id);
+
+  if (proposal.action === "unregister") {
+    for (const record of surfaces.list(owner)) surfaces.destroy(record.id);
+    packageRegistry.delete(proposal.id);
+    for (const session of mcpSessions.values()) session.server.unregisterPackageTools(proposal.id);
+    return;
+  }
+
+  // Link declared datasources to their http tools so an agent calling the
+  // tool feeds the package's own charts without any package-side code.
+  const datasources = new Map<string, string>();
+  const declared = (proposal as { datasources?: Array<{ key?: string; tool?: string }> }).datasources ?? [];
+  for (const entry of declared) {
+    if (typeof entry?.key === "string" && typeof entry?.tool === "string") datasources.set(entry.tool, entry.key);
+  }
+  const tools = (proposal.tools ?? []).map((tool) => {
+    const key = datasources.get(tool.name);
+    return key && tool.type === "http" ? { ...tool, publishTo: key } : tool;
+  });
+
+  for (const surface of proposal.surfaces ?? []) {
+    surfaces.upsert({
+      id: `${proposal.id}.${surface.id}`,
+      owner,
+      kind: surface.kind,
+      title: surface.title || `${proposal.id}.${surface.id}`,
+      geometry: surface.geometry,
+      content: surface.content,
+      persist: true,
+      createdAt: Date.now(),
+    });
+  }
+
+  if (tools.length > 0) {
+    const registration = { id: proposal.id, tools };
+    packageRegistry.set(proposal.id, registration);
+    for (const session of mcpSessions.values()) session.server.registerPackageTools(registration);
+  }
+}
+
+// --- Demo sources ------------------------------------------------------------
 
 function publishStatus(): void {
   status.set({
@@ -99,10 +297,36 @@ function handleProposal(message: WireMessage): void {
     return;
   }
 
+  if (message.key === "agent.packages") {
+    handlePackageProposal(message.value);
+    return;
+  }
+
   if (message.key === "service:ping") publishStatus();
 }
 
-const server = new WebSocketServer({ host: "127.0.0.1", port: PORT });
+const httpServer = createHttpServer((request, response) => {
+  const url = request.url ?? "/";
+  if (url.split("?")[0] === "/mcp") {
+    void handleMcpRequest(request, response).catch(() => {
+      if (!response.headersSent) response.writeHead(500).end("MCP failure");
+    });
+    return;
+  }
+  if (url.split("?")[0] === "/agent-skill") {
+    response.writeHead(200, { "content-type": "text/markdown; charset=utf-8" });
+    response.end(readSkillDocument());
+    return;
+  }
+  if (url.split("?")[0] === "/health") {
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify({ state: "ready", connections, pid: process.pid }));
+    return;
+  }
+  response.writeHead(404).end();
+});
+
+const server = new WebSocketServer({ server: httpServer });
 
 server.on("connection", (socket, request) => {
   const origin = typeof request.headers.origin === "string" ? request.headers.origin : undefined;
@@ -119,11 +343,14 @@ server.on("connection", (socket, request) => {
   hub.watch("tasks:list", tasks);
   hub.watch("service:status", status);
   hub.watch("clock", clock);
+  watchAgentSources(hub);
+  hubs.add(hub);
   wire.onMessage(handleProposal);
 
   socket.on("close", () => {
     connections = Math.max(0, connections - 1);
     publishStatus();
+    hubs.delete(hub);
     hub.dispose();
   });
   socket.on("error", () => {
@@ -131,13 +358,13 @@ server.on("connection", (socket, request) => {
   });
 });
 
-server.on("listening", () => {
-  const address = server.address();
+httpServer.listen(PORT, "127.0.0.1", () => {
+  const address = httpServer.address();
   const port = typeof address === "object" && address ? address.port : PORT;
-  console.log(`READY ${JSON.stringify({ port, url: `ws://127.0.0.1:${port}` })}`);
+  console.log(`READY ${JSON.stringify({ port, url: `ws://127.0.0.1:${port}`, mcp: `http://127.0.0.1:${port}/mcp` })}`);
 });
 
-server.on("error", (error) => {
+httpServer.on("error", (error) => {
   console.error(`SERVICE ERROR ${error.message}`);
   process.exitCode = 1;
 });
@@ -153,7 +380,12 @@ function shutdown(): void {
   for (const client of server.clients) {
     client.close(1001, "service shutting down");
   }
+  for (const session of mcpSessions.values()) {
+    void session.transport.close();
+  }
+  mcpSessions.clear();
   server.close(() => process.exit(0));
+  httpServer.close(() => process.exit(0));
   setTimeout(() => process.exit(0), 500).unref();
 }
 

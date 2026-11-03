@@ -5,13 +5,16 @@
   "type": "module",
   "description": "Demo Node/TS service that publishes signals over WebSocket.",
   "scripts": {
-    "build": "esbuild src/server.ts --bundle --platform=node --format=cjs --outfile=dist/server.cjs --external:bufferutil --external:utf-8-validate",
+    "build": "esbuild src/server.ts --bundle --platform=node --format=cjs --outfile=dist/server.cjs --external:bufferutil --external:utf-8-validate --loader:.md=text",
     "dev": "tsx src/server.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@vela/remote": "workspace:*",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "@vela/core": "workspace:*",
+    "@vela/agent-mcp": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.2"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
