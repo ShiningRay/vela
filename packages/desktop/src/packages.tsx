@@ -3,6 +3,8 @@ import { unzipSync, strFromU8 } from "fflate";
 import type { AppDefinition, AppRegistry, Vfs } from "@vela/core";
 import { Label } from "@vela/ui";
 import { useDesktop } from "./context";
+import { parseAgentSection, parsePermissions } from "./agent-manifest";
+import type { VpkAgentSection } from "./agent-manifest";
 
 export interface VpkManifest {
   id: string;
@@ -11,6 +13,10 @@ export interface VpkManifest {
   entry: string;
   icon?: string;
   window?: { width: number; height: number };
+  /** Optional declarative agent capability block; validated on parse. */
+  agent?: VpkAgentSection;
+  /** Permissions the package needs; installs require explicit user consent. */
+  permissions?: string[];
 }
 
 export interface VpkPackage {
@@ -83,6 +89,12 @@ export function parseManifest(value: unknown): VpkManifest {
     entry,
     icon: typeof manifest.icon === "string" ? manifest.icon.slice(0, 4) : "▣",
     ...(geometry ? { window: geometry } : {}),
+    ...(manifest.agent !== undefined
+      ? { agent: parseAgentSection(manifest.agent, manifest.id) }
+      : {}),
+    ...(manifest.permissions !== undefined
+      ? { permissions: parsePermissions(manifest.permissions, manifest.id) }
+      : {}),
   };
 }
 
@@ -148,6 +160,12 @@ export function installPackage(vfs: Vfs, pkg: VpkPackage): void {
   for (const [relative, content] of Object.entries(pkg.files)) {
     vfs.write(`${root}/${relative}`, content);
   }
+}
+
+/** Removes the package directory (including its grants.json) and unregisters the app. */
+export function uninstallPackage(vfs: Vfs, apps: AppRegistry, packageId: string): void {
+  vfs.remove(`/Apps/${packageId}`);
+  if (apps.find(packageId)) apps.unregister(packageId);
 }
 
 export function readInstalledPackage(vfs: Vfs, packageId: string): VpkPackage | null {

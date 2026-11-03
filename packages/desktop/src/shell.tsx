@@ -6,6 +6,7 @@ import {
   HotkeyRegistry,
   MemoryVfs,
   NotificationCenter,
+  SurfaceRegistry,
   WindowManager,
 } from "@vela/core";
 import type { AppDefinition } from "@vela/core";
@@ -20,7 +21,10 @@ import { SettingsApp } from "./apps/settings";
 import { TerminalApp } from "./apps/terminal";
 import { normalizeHotkey, SettingsStore } from "./settings";
 import type { HotkeyAction } from "./settings";
-import { registerInstalledPackages } from "./packages";
+import { registerInstalledPackages, listInstalledPackages } from "./packages";
+import { registerInstalledAgentPackages } from "./agent-manifest";
+import { serviceSession } from "./services";
+import { SurfaceLayer } from "./surfaces";
 import { DesktopContext } from "./context";
 import type { DesktopServices } from "./context";
 
@@ -49,8 +53,12 @@ export function DesktopShell(props: DesktopShellProps) {
   const notifications = props.services?.notifications ?? new NotificationCenter();
   const commands = props.services?.commands ?? new CommandRegistry();
   const settings = props.services?.settings ?? new SettingsStore();
+  const surfaces = props.services?.surfaces ?? new SurfaceRegistry({ autoSweepMs: 1_000 });
 
-  const services: DesktopServices = { windows, apps, vfs, notifications, commands, settings };
+  // Test/debug hook: lets e2e runs and console debugging inspect live surfaces.
+  (window as unknown as { __velaSurfaces?: SurfaceRegistry }).__velaSurfaces = surfaces;
+
+  const services: DesktopServices = { windows, apps, vfs, notifications, commands, settings, surfaces };
 
   for (const app of builtinApps) {
     if (!apps.find(app.id)) apps.register(app);
@@ -278,6 +286,9 @@ export function DesktopShell(props: DesktopShellProps) {
     resize();
     window.addEventListener("resize", resize);
     registerInstalledPackages(apps, vfs);
+    // Agent-capable packages replay their declarations only when the user
+    // granted them at install time (grants.json present).
+    registerInstalledAgentPackages(vfs, { surfaces, packages: listInstalledPackages(vfs) });
 
     const onBlur = () => windows.blur();
     const onFocus = () => windows.restoreFocus();
@@ -327,6 +338,14 @@ export function DesktopShell(props: DesktopShellProps) {
             )}
           </For>
         </div>
+
+        <SurfaceLayer
+          surfaces={surfaces}
+          apps={apps}
+          session={props.services?.session ?? serviceSession}
+          vfs={vfs}
+          notifications={notifications}
+        />
 
         <div class="vela-desktop__layer">
           <For each={windows.zOrder}>

@@ -1,5 +1,6 @@
 import { createContext, useContext } from "solid-js";
-import type { AppRegistry, CommandRegistry, NotificationCenter, Vfs, WindowManager } from "@vela/core";
+import type { AppRegistry, CommandRegistry, NotificationCenter, SurfaceRegistry, Vfs, WindowManager } from "@vela/core";
+import type { RemoteSession } from "@vela/remote";
 import type { SettingsStore } from "./settings";
 
 export interface DesktopServices {
@@ -9,6 +10,10 @@ export interface DesktopServices {
   notifications: NotificationCenter;
   commands: CommandRegistry;
   settings: SettingsStore;
+  /** Agent surface registry; created lazily by the shell when omitted. */
+  surfaces?: SurfaceRegistry;
+  /** Remote session to the Node service; defaults to the shared singleton. */
+  session?: RemoteSession | null;
 }
 
 export const DesktopContext = createContext<DesktopServices>();

@@ -13,6 +13,9 @@ import {
 } from "@vela/ui";
 import { useDesktop } from "../context";
 import { installPackage, listInstalledPackages, parseVpk, registerPackageApp } from "../packages";
+import type { VpkPackage } from "../packages";
+import { registerPackageAgent, writeGrants } from "../agent-manifest";
+import { AgentConsentDialog } from "../agent-consent";
 
 type MarketCategory = "productivity" | "developer" | "finance" | "fun" | "system" | "other";
 type MarketSort = "recent" | "downloads" | "rating";
@@ -74,7 +77,7 @@ function baseUrl(value: string): string {
 }
 
 export function MarketplaceApp() {
-  const { apps, notifications, settings, vfs } = useDesktop();
+  const { apps, notifications, settings, vfs, surfaces } = useDesktop();
   const [query, setQuery] = createSignal("");
   const [category, setCategory] = createSignal("");
   const [sort, setSort] = createSignal<MarketSort>("recent");
@@ -82,6 +85,7 @@ export function MarketplaceApp() {
   const [loading, setLoading] = createSignal(false);
   const [error, setError] = createSignal("");
   const [installing, setInstalling] = createSignal<string | null>(null);
+  const [pending, setPending] = createSignal<VpkPackage | null>(null);
   const [revision, setRevision] = createSignal(0);
   let requestId = 0;
 
@@ -138,6 +142,11 @@ export function MarketplaceApp() {
           `Package version mismatch: expected ${plugin.latestVersion}, got ${pkg.manifest.version}`,
         );
       }
+      // Agent-capable packages stop at the consent gate before any VFS write.
+      if (pkg.manifest.agent) {
+        setPending(pkg);
+        return;
+      }
       installPackage(vfs, pkg);
       await vfs.flush?.();
       registerPackageApp(apps, pkg.manifest);
@@ -151,6 +160,18 @@ export function MarketplaceApp() {
       setInstalling(null);
     }
   }
+
+  const finishInstall = async (pkg: VpkPackage): Promise<void> => {
+    installPackage(vfs, pkg);
+    if (pkg.manifest.agent) {
+      writeGrants(vfs, pkg.manifest.id, pkg.manifest.permissions ?? []);
+      if (surfaces) registerPackageAgent(pkg, { surfaces });
+    }
+    await vfs.flush?.();
+    registerPackageApp(apps, pkg.manifest);
+    setRevision((value) => value + 1);
+    notifications.push("Plugin installed", `${pkg.manifest.name} ${pkg.manifest.version}`);
+  };
 
   onMount(() => {
     void load();
@@ -272,6 +293,24 @@ export function MarketplaceApp() {
           )}
         </For>
       </div>
+
+      <Show when={pending()}>
+        {(pkg) => (
+          <AgentConsentDialog
+            pkg={pkg()}
+            onConfirm={() => {
+              const agreed = pkg();
+              setPending(null);
+              void finishInstall(agreed);
+            }}
+            onReject={() => {
+              const denied = pkg();
+              setPending(null);
+              notifications.push("Install cancelled", `${denied.manifest.name} was not installed.`);
+            }}
+          />
+        )}
+      </Show>
     </Stack>
   );
 }
