@@ -34,6 +34,63 @@ hello.vpk
 - `icon`: optional text glyph shown on the desktop (max 4 characters).
 - `window`: optional initial window size; width >= 240, height >= 180.
 
+## Agent capability declarations (optional)
+
+A package may declare what it offers to the desktop Agent in an optional
+`agent` section plus a `permissions` array. Packages without the section keep
+the exact install and runtime behaviour described above — no consent step
+appears for them.
+
+```json
+{
+  "id": "sales-board",
+  "agent": {
+    "surfaces": [
+      { "id": "kpi", "kind": "widget", "title": "Sales today",
+        "geometry": { "x": 40, "y": 60, "width": 220, "height": 120 },
+        "content": { "type": "chart", "spec": { "kind": "kpi", "encoding": { "value": "revenue" } }, "dataKey": "daily" } }
+    ],
+    "charts": [
+      { "id": "trend", "spec": { "kind": "line", "encoding": { "x": "date", "y": "revenue" } }, "dataKey": "daily" }
+    ],
+    "datasources": [{ "key": "daily", "tool": "query_daily" }],
+    "tools": [
+      { "name": "query_daily", "type": "http", "endpoint": "https://api.example.com/daily",
+        "method": "GET", "params": { "from": "string" } },
+      { "name": "seed_rows", "type": "static", "path": "data/seed.json" }
+    ]
+  },
+  "permissions": ["surface:create", "signal:publish", "net:api.example.com"]
+}
+```
+
+- `surfaces` / `charts`: declared desktop surfaces. The package `id` is the
+  owner namespace (`pkg.<id>`); declared surface/chart ids are prefixed
+  (`<id>.<decl>.`), chart data flows through the `pkg.<id>.data.<key>` signal.
+- `datasources`: maps a data key to one of the package's own tools. Referencing
+  an undeclared tool is rejected as `forbidden`.
+- `tools`: declarative only — packages cannot ship tool code. Two forms:
+  - `http`: the host performs the request against the declared endpoint.
+    Responses must be row arrays; successful responses for a tool linked to a
+    datasource are published to that data key automatically. Requests are
+    limited to the granted `net:<host>` sources; loopback, link-local and
+    private addresses stay blocked unless the exact host was granted, and
+    responses are capped in size and time.
+  - `static`: returns a bundled file. Paths must stay inside the package.
+  - Any code-entry field (`script`, `module`, `code`, …) fails validation with
+    `unsupported_tool`.
+- `permissions`: `surface:create`, `signal:publish`, `net:<host>`. Unknown
+  permission strings fail validation.
+
+### Install consent
+
+When a package declares an `agent` section, the install flow shows the full
+permission list **before anything is written to the VFS**. Denying aborts the
+whole install. Granting writes `/Apps/<id>/grants.json`; the grants (and the
+declared capabilities) are restored on shell start-up and removed on uninstall.
+Installed agent tools appear in the MCP tool table as `<id>.<tool>` and are
+unregistered when the package is removed.
+
 ## Demo packages
 
 The P4 demo apps live in the separate [ShiningRay/vela-apps](https://github.com/ShiningRay/vela-apps)
