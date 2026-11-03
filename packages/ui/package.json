@@ -15,6 +15,7 @@
   "dependencies": {
     "@vela/core": "workspace:*",
     "@vela/theme": "workspace:*",
+    "echarts": "^6.1.0",
     "solid-js": "^1.9.18"
   }
 }
