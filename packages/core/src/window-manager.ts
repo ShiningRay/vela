@@ -7,6 +7,8 @@ export interface WindowState {
   restore: Geometry | null;
 }
 
+export type WindowKind = "window" | "widget";
+
 export interface WindowRecord {
   id: string;
   /** Application that owns this window. Several windows may share one appId. */
@@ -16,6 +18,10 @@ export interface WindowRecord {
   state: WindowState;
   minWidth: number;
   minHeight: number;
+  /** Windows render normally; widgets skip taskbar registration and chrome. */
+  kind: WindowKind;
+  /** False renders the frame without title bar, controls or resize handle. */
+  decorations: boolean;
 }
 
 export interface OpenWindowOptions {
@@ -25,6 +31,8 @@ export interface OpenWindowOptions {
   geometry: Geometry;
   minWidth?: number;
   minHeight?: number;
+  kind?: WindowKind;
+  decorations?: boolean;
 }
 
 type Signal<T> = readonly [
@@ -145,6 +153,8 @@ export class WindowManager {
       state: { minimized: false, maximized: false, restore: null },
       minWidth: options.minWidth ?? DEFAULT_MIN_WIDTH,
       minHeight: options.minHeight ?? DEFAULT_MIN_HEIGHT,
+      kind: options.kind ?? "window",
+      decorations: options.decorations ?? true,
     };
 
     this.#records[1]((records) => [...records, record]);

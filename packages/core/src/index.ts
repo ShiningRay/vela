@@ -4,6 +4,24 @@ export type { AppDefinition } from "./app-registry";
 export { CommandRegistry } from "./commands";
 export type { Command } from "./commands";
 
+export {
+  MAX_CHART_ROWS,
+  chartSpecJsonSchema,
+  formatChartValue,
+  isIso8601,
+  validateChartSpec,
+} from "./chart-spec";
+export type {
+  ChartEncoding,
+  ChartKind,
+  ChartRow,
+  ChartSpec,
+  ChartSpecError,
+  ChartSpecErrorCode,
+  ChartSpecValidation,
+  ChartXType,
+} from "./chart-spec";
+
 export { HotkeyRegistry, normalizeCombo } from "./hotkeys";
 export type { HotkeyHandler } from "./hotkeys";
 
@@ -26,6 +44,17 @@ export {
   SNAP_EDGE,
   WindowManager,
 } from "./window-manager";
-export type { OpenWindowOptions, WindowRecord, WindowState } from "./window-manager";
+export type { OpenWindowOptions, WindowKind, WindowRecord, WindowState } from "./window-manager";
+
+export { SurfaceError, SurfaceRegistry } from "./surface";
+export type {
+  SurfaceContent,
+  SurfaceCreateInput,
+  SurfaceErrorCode,
+  SurfaceKind,
+  SurfacePatchInput,
+  SurfaceRecord,
+  SurfaceRegistryOptions,
+} from "./surface";
 
 export type { Geometry, SnapZone, Viewport } from "./types";
