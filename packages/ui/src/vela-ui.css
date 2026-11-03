@@ -1684,3 +1684,80 @@
   padding: 0 8px;
   cursor: pointer;
 }
+
+.vela-chart {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 60px;
+  overflow: hidden;
+}
+
+.vela-chart--waiting {
+  align-items: center;
+  justify-content: center;
+  color: var(--vela-color-muted);
+  border: 1px dashed var(--vela-color-border, var(--vela-color-muted));
+  border-radius: 8px;
+}
+
+.vela-chart__waiting-label {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.vela-chart__kpi-value {
+  font-size: 34px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  color: var(--vela-color-text);
+}
+
+.vela-chart [data-chart-kind="table"] {
+  overflow: auto;
+}
+
+.vela-surface-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.vela-surface-layer > * {
+  pointer-events: auto;
+}
+
+.vela-surface__static {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  overflow: auto;
+}
+
+.vela-surface__body {
+  margin: 0;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.vela-surface__remote {
+  margin: 0;
+  padding: 10px;
+  overflow: auto;
+  font-family: var(--vela-font-mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+
+.vela-surface__chart {
+  padding: 6px;
+}
+
+.vela-agent-consent__item {
+  list-style: disc;
+  color: var(--vela-color-text);
+}

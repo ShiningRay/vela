@@ -1,6 +1,9 @@
 export { Button, IconButton, Label, MenuList, Row, Stack } from "./primitives/button";
 export type { ButtonProps, ButtonVariant, IconButtonProps, LabelProps, MenuListProps, RowProps, StackProps } from "./primitives/button";
 
+export { Chart, DEFAULT_CHART_COLORS, mapSpecToOption } from "./chart";
+export type { ChartProps, ChartTheme } from "./chart";
+
 export {
   Checkbox,
   FilePickerButton,

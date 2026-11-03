@@ -25,6 +25,7 @@ function snapZoneAt(clientX: number, clientY: number): SnapZone | null {
 
 export function WindowFrame(props: WindowFrameProps): JSX.Element {
   const [preview, setPreview] = createSignal<SnapZone | null>(null);
+  const decorated = (): boolean => props.record.decorations !== false;
 
   const stopDragging = (move: (event: PointerEvent) => void, up: () => void): void => {
     window.removeEventListener("pointermove", move);
@@ -89,6 +90,8 @@ export function WindowFrame(props: WindowFrameProps): JSX.Element {
         class="vela-window"
         data-app-id={props.record.appId}
         data-window-id={props.record.id}
+        data-window-kind={props.record.kind}
+        data-decorated={decorated() ? "true" : "false"}
         data-active={props.active ? "true" : "false"}
         data-maximized={props.record.state.maximized ? "true" : "false"}
         data-minimized={props.record.state.minimized ? "true" : "false"}
@@ -101,24 +104,26 @@ export function WindowFrame(props: WindowFrameProps): JSX.Element {
         }}
         onPointerDown={() => props.onFocus()}
       >
-        <header class="vela-window__titlebar" onPointerDown={startDrag} onDblClick={() => props.onMaximize()}>
-          <span class="vela-window__title">{props.record.title}</span>
-          <div class="vela-window__controls" onPointerDown={(event) => event.stopPropagation()}>
-            <button type="button" class="vela-window__control" title="Minimize" onClick={() => props.onMinimize()}>
-              <span aria-hidden="true">–</span>
-            </button>
-            <button type="button" class="vela-window__control" title="Maximize" onClick={() => props.onMaximize()}>
-              <span aria-hidden="true">{props.record.state.maximized ? "❐" : "□"}</span>
-            </button>
-            <button type="button" class="vela-window__control is-close" title="Close" onClick={() => props.onClose()}>
-              <span aria-hidden="true">×</span>
-            </button>
-          </div>
-        </header>
+        <Show when={decorated()}>
+          <header class="vela-window__titlebar" onPointerDown={startDrag} onDblClick={() => props.onMaximize()}>
+            <span class="vela-window__title">{props.record.title}</span>
+            <div class="vela-window__controls" onPointerDown={(event) => event.stopPropagation()}>
+              <button type="button" class="vela-window__control" title="Minimize" onClick={() => props.onMinimize()}>
+                <span aria-hidden="true">–</span>
+              </button>
+              <button type="button" class="vela-window__control" title="Maximize" onClick={() => props.onMaximize()}>
+                <span aria-hidden="true">{props.record.state.maximized ? "❐" : "□"}</span>
+              </button>
+              <button type="button" class="vela-window__control is-close" title="Close" onClick={() => props.onClose()}>
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+          </header>
+        </Show>
 
         <div class="vela-window__body">{props.children}</div>
 
-        <Show when={!props.record.state.maximized}>
+        <Show when={decorated() && !props.record.state.maximized}>
           <div class="vela-window__resize" onPointerDown={startResize} aria-hidden="true" />
         </Show>
       </section>
