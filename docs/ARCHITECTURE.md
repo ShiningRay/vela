@@ -81,7 +81,7 @@ Citrine 的“每个带 block 的节点一个 Effect”在 Solid 中由编译器
 - 删除目录递归删除子项；
 - 根目录不可写、不可删。
 
-应用包、设置与文件共享同一套持久化；编辑器和终端只依赖 `Vfs` 接口。
+应用包与文件共享同一套 VFS 持久化。系统设置由 `@vela/core` 的 `ConfigStore` 写入 `/Config/system.json`；内置应用配置按 `/Config/apps/<id>.json` 隔离。首版只把配置服务注入内置应用，VPK 沙箱不暴露该接口。编辑器和终端仍只依赖 `Vfs` 接口。
 
 ### 3.4 命令、快捷键、通知
 

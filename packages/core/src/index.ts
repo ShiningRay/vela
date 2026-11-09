@@ -1,6 +1,14 @@
 export { AppRegistry } from "./app-registry";
 export type { AppDefinition } from "./app-registry";
 
+export { ConfigError, ConfigStore } from "./config-store";
+export type {
+  ConfigErrorCode,
+  ConfigSchema,
+  ConfigScope,
+  ConfigScopeId,
+} from "./config-store";
+
 export { CommandRegistry } from "./commands";
 export type { Command } from "./commands";
 

@@ -26,6 +26,7 @@ export { TerminalApp } from "./apps/terminal";
 export {
   defaultSettings,
   HOTKEY_ACTIONS,
+  migrateLegacySettings,
   normalizeHotkey,
   SettingsStore,
   WALLPAPERS,

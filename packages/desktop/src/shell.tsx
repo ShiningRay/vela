@@ -3,6 +3,7 @@ import { Dynamic } from "solid-js/web";
 import {
   AppRegistry,
   CommandRegistry,
+  ConfigStore,
   HotkeyRegistry,
   MemoryVfs,
   NotificationCenter,
@@ -52,13 +53,14 @@ export function DesktopShell(props: DesktopShellProps) {
   const vfs = props.services?.vfs ?? new MemoryVfs();
   const notifications = props.services?.notifications ?? new NotificationCenter();
   const commands = props.services?.commands ?? new CommandRegistry();
-  const settings = props.services?.settings ?? new SettingsStore();
+  const config = props.services?.config ?? new ConfigStore(vfs);
+  const settings = props.services?.settings ?? new SettingsStore(undefined, config);
   const surfaces = props.services?.surfaces ?? new SurfaceRegistry({ autoSweepMs: 1_000 });
 
   // Test/debug hook: lets e2e runs and console debugging inspect live surfaces.
   (window as unknown as { __velaSurfaces?: SurfaceRegistry }).__velaSurfaces = surfaces;
 
-  const services: DesktopServices = { windows, apps, vfs, notifications, commands, settings, surfaces };
+  const services: DesktopServices = { windows, apps, vfs, notifications, commands, settings, config, surfaces };
 
   for (const app of builtinApps) {
     if (!apps.find(app.id)) apps.register(app);

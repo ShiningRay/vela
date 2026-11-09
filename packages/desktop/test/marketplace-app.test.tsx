@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   AppRegistry,
   CommandRegistry,
+  ConfigStore,
   MemoryVfs,
   NotificationCenter,
   WindowManager,
@@ -54,18 +55,24 @@ const plugin = {
 
 function services(): DesktopServices {
   const storage = new Map<string, string>();
+  const vfs = new MemoryVfs();
+  const config = new ConfigStore(vfs);
   return {
     windows: new WindowManager(),
     apps: new AppRegistry(),
-    vfs: new MemoryVfs(),
+    vfs,
     notifications: new NotificationCenter({ defaultTimeoutMs: 0 }),
     commands: new CommandRegistry(),
-    settings: new SettingsStore({
-      getItem: (key) => storage.get(key) ?? null,
-      setItem: (key, value) => {
-        storage.set(key, value);
+    config,
+    settings: new SettingsStore(
+      {
+        getItem: (key) => storage.get(key) ?? null,
+        setItem: (key, value) => {
+          storage.set(key, value);
+        },
       },
-    }),
+      config,
+    ),
   };
 }
 

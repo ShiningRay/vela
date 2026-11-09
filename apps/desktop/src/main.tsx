@@ -1,8 +1,9 @@
 import { render } from "solid-js/web";
-import { NotificationCenter, openPersistentVfs } from "@vela/core";
+import { ConfigStore, NotificationCenter, openPersistentVfs } from "@vela/core";
 import {
   appendServiceLog,
   DesktopShell,
+  migrateLegacySettings,
   SettingsStore,
   setServiceHealthy,
   setServiceLogs,
@@ -20,8 +21,11 @@ interface SupervisorStatus {
   error: string | null;
 }
 
-const settings = new SettingsStore();
 const vfs = await openPersistentVfs();
+const config = new ConfigStore(vfs);
+const settingsStorage = typeof localStorage === "undefined" ? undefined : localStorage;
+await migrateLegacySettings(settingsStorage, config);
+const settings = new SettingsStore(settingsStorage, config);
 
 async function sendSystemNotification(title: string, body?: string): Promise<void> {
   try {
@@ -89,4 +93,7 @@ async function connectServiceBridge(): Promise<void> {
 
 void connectServiceBridge();
 
-render(() => <DesktopShell services={{ vfs, settings, notifications }} onQuit={quit} />, root);
+render(
+  () => <DesktopShell services={{ vfs, settings, notifications, config }} onQuit={quit} />,
+  root,
+);
