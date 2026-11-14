@@ -116,6 +116,49 @@ Vela 的内置 Plugin Market 会从独立部署的 `vela-marketplace` 服务搜�
    the launcher immediately.
 5. On the next launch, `DesktopShell` scans `/Apps` and re-registers packages.
 
+## Debugging without the desktop shell
+
+Both debug hosts run the **same** pipeline as the desktop installer/runner —
+`parseVpk` → `installPackage` → `packageDocument` from `@vela/vpk` — so parse
+failures, the sandbox CSP and the opaque-origin iframe behave exactly as they do
+in the shell. Neither host relaxes the CSP: package code still has no network
+access; remote data belongs in declarative `agent` tools.
+
+### VPK Playground (browser)
+
+```sh
+pnpm dev:playground   # → http://localhost:5175
+```
+
+- Drop or pick a `.vpk`, or paste a URL; `?src=<url>` installs on load. The
+  fetch follows normal CORS rules — the server hosting the `.vpk` must allow
+  the playground origin (e.g. `vite preview --cors`).
+- Packages install into a session-only in-memory VFS; reinstalling the same id
+  replaces the whole directory (no stale files survive).
+- The info panel shows manifest fields, permissions, the `agent` summary and
+  the file list with sizes; validation errors surface verbatim.
+- The run area simulates the desktop window: the frame uses
+  `manifest.window` (default 640×460, matching `DesktopShell.openApp`); tick
+  "Fill panel" to ignore the declared size.
+- **Debug mode** injects the console bridge into the frame (only here, never on
+  the desktop): `console.*` output and uncaught errors are postMessage'd to the
+  playground's console panel. Toggling it re-renders the package.
+
+### `vpk` CLI
+
+```sh
+pnpm --filter @vela/vpk build    # produces dist/cli.mjs and dist/host.js
+npx vpk lint dist/hello.vpk      # validate only; exit code 1 on failure
+npx vpk run  dist/hello.vpk      # debug host on http://127.0.0.1:4390
+npx vpk run  dist/hello.vpk --port 4600 --debug --no-open
+```
+
+`vpk run` serves a minimal host page that mounts the package with the same
+iframe/CSP semantics; `--debug` enables the console bridge and forwards
+`[vpk]`-prefixed messages to the host page console. `/package.vpk` is re-read
+from disk on every request, so the edit → repackage → browser-refresh loop
+needs no server restart.
+
 ## Runtime sandbox
 
 The entry is rendered in an iframe with `sandbox="allow-scripts"` and a

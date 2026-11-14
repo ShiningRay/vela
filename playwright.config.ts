@@ -39,5 +39,11 @@ export default defineConfig({
       reuseExistingServer: true,
       timeout: 120_000,
     },
+    {
+      command: "pnpm --filter @vela/app-playground dev",
+      url: "http://localhost:5175",
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
   ],
 });

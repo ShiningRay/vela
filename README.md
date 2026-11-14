@@ -94,6 +94,8 @@ pnpm docs:build
 
 `pnpm dev` 打开 `http://localhost:5173` 的 Counter 示例，`pnpm dev:components` 打开 `http://localhost:5174` 的组件示例页。`pnpm dev:desktop` 会先启动 Vite，再由 Tauri 打开原生窗口；Rust 侧用随包暂存的 Node 运行时启动 `services/demo`，服务绑定随机空闲端口，实际 `ws://` 地址通过 supervisor 状态事件交给前端。浏览器调试时用 `pnpm dev:service` 手动起服务（默认 `ws://127.0.0.1:4317`）。如果本机已有可用的 Chromium、但无法访问 Playwright CDN，可为 `pnpm e2e` 设置 `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`。
 
+不启动桌面环境即可调试 `.vpk` 应用包：`pnpm dev:playground`（`http://localhost:5175`，拖入/选文件/URL 安装并运行，窗口尺寸模拟，调试模式转发包内 console）；或用 `@vela/vpk` 的 CLI：`npx vpk lint <file.vpk>` 校验、`npx vpk run <file.vpk>` 起本地调试宿主页。两者复用与桌面一致的解析/安装/渲染管线，CSP 与沙箱语义不变，详见 [docs/VPK.md](docs/VPK.md) 的 "Debugging without the desktop shell"。
+
 三个 VPK demo 已独立到 [ShiningRay/vela-apps](https://github.com/ShiningRay/vela-apps)，构建产物在其 `dist/vpk/` 生成并通过 [v0.1.0 Release](https://github.com/ShiningRay/vela-apps/releases/tag/v0.1.0) 发布；Vela 只保留 `.vpk` 安装器。
 
 插件市场服务已独立到 [vela-marketplace](https://github.com/ShiningRay/vela-marketplace) 仓，随独立仓部署；Vela 只保留内置 Plugin Market 客户端。客户端默认连接 `http://127.0.0.1:4320`，可在 Settings → Marketplace URL 改为部署后的市场地址。
@@ -108,6 +110,8 @@ P1 桌面壳与服务治理、P2 组件库、P3 持久化与应用包、P6 插�
 - `@vela/desktop`：DesktopShell + About / Files / Editor / Terminal / Plugin Market / Service / Settings；Plugin Market 可搜索、安装远端 `.vpk`；Files 支持导入/导出、新建、删除与路径面包屑；Settings 持久化主题、壁纸、Marketplace URL 与快捷键，并可安装 `.vpk` 应用包；Editor 与 Terminal 共用持久 VFS；
 - `@vela/app-demo`：Counter 与深相等行为演示；
 - `@vela/app-components`：全部组件的 Vite 示例页；
+- `@vela/vpk`：`.vpk` 工具包——解析/校验/安装/文档渲染与调试用控制台桥，桌面、Playground 与 `vpk` CLI 共用同一实现；
+- `@vela/app-playground`：VPK Playground（`:5175`），不启动桌面壳即可安装、检查、运行 `.vpk`，支持 `?src=` 直达与窗口尺寸模拟；
 - `@vela/app-desktop`：Tauri 2 壳、Node 服务 supervisor（随机端口、健康检查、崩溃重启、日志）、notification 插件、图标；
 - `@vela/service-demo`：Node/TS WebSocket 服务，发布 `tasks:list` / `service:status` / `clock` 三个信号；
 - `docs`：VitePress 文档站，GitHub Pages 自动部署，含组件示例站；
