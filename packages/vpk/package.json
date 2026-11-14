@@ -1,0 +1,28 @@
+{
+  "name": "@vela/vpk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vela .vpk toolkit: parse, validate, install, render and debug .vpk app packages with or without the desktop shell.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./host": "./src/host.ts"
+  },
+  "types": "./src/index.ts",
+  "bin": {
+    "vpk": "./dist/cli.mjs"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@vela/core": "workspace:*",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

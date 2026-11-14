@@ -284,6 +284,28 @@ importers:
         specifier: ^2.11.15
         version: 2.11.15(solid-js@1.9.18)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
 
+  apps/playground:
+    dependencies:
+      '@vela/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@vela/vpk':
+        specifier: workspace:*
+        version: link:../../packages/vpk
+      solid-js:
+        specifier: ^1.9.18
+        version: 1.9.18
+    devDependencies:
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vite:
+        specifier: ^8.3.5
+        version: 8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
+      vite-plugin-solid:
+        specifier: ^2.11.15
+        version: 2.11.15(solid-js@1.9.18)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
+
   packages/agent-mcp:
     dependencies:
       '@modelcontextprotocol/sdk':
@@ -323,12 +345,16 @@ importers:
       '@vela/ui':
         specifier: workspace:*
         version: link:../ui
-      fflate:
-        specifier: ^0.8.3
-        version: 0.8.3
+      '@vela/vpk':
+        specifier: workspace:*
+        version: link:../vpk
       solid-js:
         specifier: ^1.9.18
         version: 1.9.18
+    devDependencies:
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
 
   packages/remote:
     dependencies:
@@ -355,6 +381,25 @@ importers:
       solid-js:
         specifier: ^1.9.18
         version: 1.9.18
+
+  packages/vpk:
+    dependencies:
+      '@vela/core':
+        specifier: workspace:*
+        version: link:../core
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.19.2
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
 
   services/demo:
     dependencies:
