@@ -1,0 +1,373 @@
+:root {
+  color-scheme: dark;
+  --pg-bg: #0b1120;
+  --pg-panel: #111a2e;
+  --pg-border: #1f2a44;
+  --pg-text: #e2e8f0;
+  --pg-muted: #7c8aa5;
+  --pg-accent: #60a5fa;
+  --pg-error: #f87171;
+  --pg-ok: #4ade80;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--pg-bg);
+  color: var(--pg-text);
+  font: 14px/1.55 "SF Pro Text", system-ui, -apple-system, sans-serif;
+}
+
+.playground {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.pg-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--pg-border);
+}
+
+.pg-header h1 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.pg-subtitle {
+  margin: 0;
+  color: var(--pg-muted);
+  font-size: 12px;
+  flex: 1;
+}
+
+.pg-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  padding: 16px 20px;
+  flex: 1;
+  min-height: 0;
+}
+
+.pg-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.pg-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 22px 12px;
+  border: 1.5px dashed var(--pg-border);
+  border-radius: 10px;
+  text-align: center;
+  color: var(--pg-muted);
+}
+
+.pg-dropzone.is-dragging {
+  border-color: var(--pg-accent);
+  color: var(--pg-accent);
+  background: rgba(96, 165, 250, 0.08);
+}
+
+.pg-url {
+  display: flex;
+  gap: 8px;
+}
+
+.pg-url input {
+  flex: 1;
+  min-width: 0;
+}
+
+input[type="url"],
+input[type="text"] {
+  background: var(--pg-panel);
+  border: 1px solid var(--pg-border);
+  border-radius: 6px;
+  color: var(--pg-text);
+  padding: 6px 10px;
+  font: inherit;
+}
+
+.pg-button {
+  display: inline-block;
+  background: var(--pg-panel);
+  border: 1px solid var(--pg-border);
+  border-radius: 6px;
+  color: var(--pg-text);
+  padding: 6px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pg-button:hover:not(:disabled) {
+  border-color: var(--pg-accent);
+}
+
+.pg-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pg-button input[type="file"] {
+  display: none;
+}
+
+.pg-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pg-muted);
+  font-size: 12px;
+}
+
+.pg-error {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--pg-error);
+  border-radius: 6px;
+  color: var(--pg-error);
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.pg-status {
+  margin: 0;
+  color: var(--pg-ok);
+  font-size: 12px;
+}
+
+.pg-muted {
+  color: var(--pg-muted);
+}
+
+.pg-installed h2,
+.pg-console h2 {
+  font-size: 13px;
+  margin: 0 0 8px;
+}
+
+.pg-installed ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pg-installed li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--pg-panel);
+  border: 1px solid var(--pg-border);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.pg-open {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  color: var(--pg-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pg-open:hover .pg-name {
+  color: var(--pg-accent);
+}
+
+.pg-icon {
+  font-size: 16px;
+}
+
+.pg-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pg-name small {
+  color: var(--pg-muted);
+  font-size: 11px;
+}
+
+.pg-remove {
+  background: none;
+  border: 1px solid var(--pg-border);
+  border-radius: 6px;
+  color: var(--pg-muted);
+  font-size: 11px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.pg-remove:hover {
+  color: var(--pg-error);
+  border-color: var(--pg-error);
+}
+
+.pg-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.pg-empty {
+  padding: 40px;
+  text-align: center;
+}
+
+.pg-info {
+  background: var(--pg-panel);
+  border: 1px solid var(--pg-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.pg-info h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.pg-info small {
+  color: var(--pg-muted);
+  font-weight: normal;
+}
+
+.pg-info dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 14px;
+  margin: 0;
+  font-size: 12px;
+}
+
+.pg-info dt {
+  color: var(--pg-muted);
+}
+
+.pg-info dd {
+  margin: 0;
+  font-family: ui-monospace, monospace;
+}
+
+.pg-files {
+  margin-top: 10px;
+}
+
+.pg-files summary {
+  cursor: pointer;
+  color: var(--pg-muted);
+  font-size: 12px;
+}
+
+.pg-files table {
+  width: 100%;
+  margin-top: 8px;
+  border-collapse: collapse;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+}
+
+.pg-files td {
+  border-top: 1px solid var(--pg-border);
+  padding: 3px 6px;
+}
+
+.pg-files td:last-child {
+  text-align: right;
+  color: var(--pg-muted);
+}
+
+.pg-run-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pg-run-frame {
+  border: 1px solid var(--pg-border);
+  border-radius: 10px;
+  background: #0b1120;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+.vela-run-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  border: 0;
+  border-radius: var(--vela-radius-sm, 8px);
+  display: block;
+}
+
+.pg-console {
+  background: var(--pg-panel);
+  border: 1px solid var(--pg-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.pg-console-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pg-console ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.pg-log-line {
+  padding: 2px 0;
+  border-bottom: 1px solid var(--pg-border);
+  white-space: pre-wrap;
+}
+
+.pg-log-level {
+  display: inline-block;
+  width: 52px;
+  color: var(--pg-muted);
+}
+
+.pg-log-line[data-level="error"] {
+  color: var(--pg-error);
+}
+
+.pg-log-line[data-level="warn"] {
+  color: #fbbf24;
+}

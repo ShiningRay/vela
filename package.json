@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "pnpm --filter @vela/app-demo dev",
     "dev:components": "pnpm --filter @vela/app-components dev",
+    "dev:playground": "pnpm --filter @vela/app-playground dev",
     "dev:service": "pnpm --filter @vela/service-demo dev",
     "dev:desktop": "pnpm --filter @vela/app-desktop tauri dev",
     "build": "pnpm -r --if-present build",
